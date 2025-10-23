@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Training Module</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="mb-4 text-center text-primary">Model Training Dashboard</h2>
+
+    <!-- Training Options -->
+    <form method="post" enctype="multipart/form-data">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Training Type</label>
+          <select class="form-select" name="train_type" required>
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Number of Samples</label>
+          <div class="input-group">
+            <input type="number" class="form-control" name="num_samples" placeholder="e.g. 1000" required>
+            <select class="form-select" name="sample_mode" style="max-width: 150px;">
+              <option value="random">Random</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Training Depth</label>
+          <select class="form-select" name="train_depth" required>
+            <option value="normal">Normal (epochs=10, patience=3)</option>
+            <option value="deep">Deep (epochs=50, patience=5)</option>
+            <option value="super_deep">Super Deep (epochs=100, patience=10)</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Mode</label>
+          <select class="form-select" name="train_mode" id="trainMode" required>
+            <option value="from_scratch">Train from Scratch</option>
+            <option value="resume">Resume Training</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Resume model list (ẩn/hiện theo lựa chọn) -->
+      <div class="row mb-3 d-none" id="resumeSection">
+        <div class="col-md-12">
+          <label class="form-label">Select Existing Model to Resume</label>
+          <select class="form-select" name="resume_model">
+            <option value="">-- Select Model --</option>
+            <option value="model_v1">20_12_2025_v1.h5</option>
+            <option value="model_v2">20_12_2025_v2.h5</option>
+            <option value="model_best">21_12_2025.h5</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="text-center mb-4">
+        <button type="button" class="btn btn-outline-primary px-4">View History Results</button>
+        <button type="submit" class="btn btn-success px-4">Start Training</button>
+        <button type="button" class="btn btn-danger px-4">Stop</button>
+      </div>
+    </form>
+
+    <!-- Results Section -->
+    <div class="mt-5">
+      <h4 class="mb-3 text-secondary">Training Results</h4>
+      <table class="table table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1 Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>--</td>
+            <td>--</td>
+            <td>--</td>
+            <td>--</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Save/Discard -->
+    <div class="d-flex justify-content-center gap-3 mt-3">
+      <button class="btn btn-primary">Save Result</button>
+      <button class="btn btn-secondary">Discard</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const trainMode = document.getElementById('trainMode');
+  const resumeSection = document.getElementById('resumeSection');
+
+  trainMode.addEventListener('change', () => {
+    if (trainMode.value === 'resume') {
+      resumeSection.classList.remove('d-none');
+    } else {
+      resumeSection.classList.add('d-none');
+    }
+  });
+</script>
+
+</body>
+</html>

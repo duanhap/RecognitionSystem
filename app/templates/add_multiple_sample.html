@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Sample</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    .preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .preview-container img, .preview-container video {
+        max-width: 180px;
+        max-height: 120px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+    </style>
+</head>
+<body class="bg-light">
+    
+
+  <div class="container mt-5">
+    <div class="card shadow p-4">
+      <h2 class="mb-4 text-center text-primary">Add New Sample</h2>
+
+      <form id="sampleForm">
+        <div class="mb-3">
+          <label class="form-label"><strong>Type</strong></label>
+          <select class="form-select" id="typeSelect" required>
+            <option value="">-- Select Type --</option>
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Label</strong></label>
+          <select class="form-select" id="labelSelect" required>
+            <option value="real">Real</option>
+            <option value="fake">Fake</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Description</strong></label>
+          <textarea class="form-control" id="descriptionInput" rows="3" placeholder="FakeType: ..., Source: ..."></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Upload File</strong></label>
+          <input type="file" id="fileInput" class="form-control" multiple>
+          <div id="preview" class="preview-container"></div>
+        </div>
+      </form>
+
+      <!-- Action Buttons -->
+      <div class="d-flex justify-content-between mt-4">
+        <button class="btn btn-secondary" onclick="history.back()">← Back</button>
+        <div>
+          <button class="btn btn-primary me-2">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const typeSelect = document.getElementById('typeSelect');
+
+    fileInput.addEventListener('change', () => {
+      preview.innerHTML = '';
+      const files = fileInput.files;
+      const type = typeSelect.value;
+
+      if (files.length > 0 && type) {
+        [...files].forEach(file => {
+          const url = URL.createObjectURL(file);
+          if (type === 'image') {
+            const img = document.createElement('img');
+            img.src = url;
+            preview.appendChild(img);
+          } else if (type === 'video') {
+            const video = document.createElement('video');
+            video.src = url;
+            video.controls = true;
+            preview.appendChild(video);
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+<!-- {% if message %}
+<div class="alert alert-info mt-3">
+    {{ message }}
+</div>
+{% endif %} -->

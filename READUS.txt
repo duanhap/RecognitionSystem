@@ -1,0 +1,48 @@
+hotel_system/
+│── app/
+│   ├── __init__.py
+│   ├── main.py            # file chạy app
+│   ├── core/              # config, kết nối DB
+│   │   ├── __init__.py
+│   │   └── database.py
+│   ├── models/            # ORM models
+│   │   ├── __init__.py
+│   │   └── user.py
+│   ├── repositories/      # thao tác DB (CRUD)
+│   │   ├── __init__.py
+│   │   └── user_repository.py
+│   ├── services/          # logic nghiệp vụ
+│   │   ├── __init__.py
+│   │   └── auth_service.py
+│   ├── routers/           # route FastAPI
+│   │   ├── __init__.py
+│   │   └── auth_router.py
+│   └── templates/         # Jinja2 templates (FE)
+│   |    ├── login.html
+│   |    └── home.html
+│   └── static/              # chứa file tĩnh
+│       ├── images/
+│       │   ├── logo.png
+│       │   └── banner.jpg
+│       └── icons/
+│           └── favicon.ico
+├── requirements.txt
+└── alembic/               # (tùy chọn) migration DB
+pip install -r requirements.txt
+
+
+
+[Browser] -- nhập /login --> [FastAPI Router] -- render login.html
+[Browser nhập form] -- POST /login --> [FastAPI Router] 
+        --> [Auth Service] --> [User Repository] --> [DB MySQL] 
+        --> nếu đúng user => Redirect /home 
+        --> nếu sai => render lại login.html với error
+
+ uvicorn app.main:app --reload
+
+
+router chịu trách nhiệm nhận request / trả response. (servlet)
+
+service xử lý logic. (controller)
+
+repository làm việc với DB. (DAO)

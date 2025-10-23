@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .rating-stars {
+      font-size: 1.2rem;
+    }
+    .progress {
+      height: 10px;
+    }
+    .feedback-item {
+      transition: all 0.3s ease;
+    }
+    .feedback-item:hover {
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="mb-4 text-center text-primary">Feedback & Rating Overview</h2>
+
+    <!-- Filter Section -->
+
+    <!-- Statistics Section -->
+    <div class="row mb-5">
+      <!-- Left Column: Overall Rating -->
+      <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm p-3 h-100">
+          <h5 class="text-center mb-3">Điểm xếp hạng & bài đánh giá</h5>
+
+          <div class="text-center mb-4">
+            <h1 class="text-warning fw-bold mb-1">4.7</h1>
+            <div class="rating-stars mb-2">
+              <span class="text-warning">★</span>
+              <span class="text-warning">★</span>
+              <span class="text-warning">★</span>
+              <span class="text-warning">★</span>
+              <span class="text-warning">★</span>
+            </div>
+            <p class="text-muted">119,124 lượt đánh giá</p>
+          </div>
+
+          <!-- Rating Distribution -->
+          <div class="mt-3">
+            <div class="d-flex align-items-center mb-2">
+              <span class="me-2" style="width: 25px;">5★</span>
+              <div class="progress flex-grow-1 mx-2">
+                <div class="progress-bar bg-warning" style="width: 75%"></div>
+              </div>
+              <span style="width: 40px;">75%</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <span class="me-2" style="width: 25px;">4★</span>
+              <div class="progress flex-grow-1 mx-2">
+                <div class="progress-bar bg-warning" style="width: 15%"></div>
+              </div>
+              <span style="width: 40px;">15%</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <span class="me-2" style="width: 25px;">3★</span>
+              <div class="progress flex-grow-1 mx-2">
+                <div class="progress-bar bg-warning" style="width: 6%"></div>
+              </div>
+              <span style="width: 40px;">6%</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <span class="me-2" style="width: 25px;">2★</span>
+              <div class="progress flex-grow-1 mx-2">
+                <div class="progress-bar bg-warning" style="width: 3%"></div>
+              </div>
+              <span style="width: 40px;">3%</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="me-2" style="width: 25px;">1★</span>
+              <div class="progress flex-grow-1 mx-2">
+                <div class="progress-bar bg-warning" style="width: 1%"></div>
+              </div>
+              <span style="width: 40px;">1%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Feedback History -->
+      <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-3 h-100">
+          <h5 class="mb-3">Lịch sử đánh giá</h5>
+          
+          <div class="feedback-list" style="max-height: 400px; overflow-y: auto;">
+            <!-- Feedback Item 1 -->
+            <div class="feedback-item border-bottom pb-3 mb-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1 fw-bold">Nguyễn Văn A</h6>
+                <small class="text-muted">15/12/2024</small>
+              </div>
+              <div class="d-flex align-items-center mb-2">
+                <div class="rating-stars me-2">
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                </div>
+              </div>
+              <p class="mb-0">Sản phẩm tuyệt vời, tôi rất hài lòng với chất lượng và dịch vụ!</p>
+            </div>
+
+            <!-- Feedback Item 2 -->
+            <div class="feedback-item border-bottom pb-3 mb-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1 fw-bold">Trần Thị B</h6>
+                <small class="text-muted">14/12/2024</small>
+              </div>
+              <div class="d-flex align-items-center mb-2">
+                <div class="rating-stars me-2">
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-secondary">☆</span>
+                </div>
+              </div>
+              <p class="mb-0">Không chấp nhận được hệ thống quá xịn xò.</p>
+            </div>
+
+            <!-- Feedback Item 3 -->
+            <div class="feedback-item border-bottom pb-3 mb-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1 fw-bold">Lê Văn C</h6>
+                <small class="text-muted">13/12/2024</small>
+              </div>
+              <div class="d-flex align-items-center mb-2">
+                <div class="rating-stars me-2">
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-secondary">☆</span>
+                  <span class="text-secondary">☆</span>
+                </div>
+              </div>
+              <p class="mb-0">Web tạm được, nhưng load lâu quá.</p>
+            </div>
+
+            <!-- Feedback Item 4 -->
+            <div class="feedback-item border-bottom pb-3 mb-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1 fw-bold">Phạm Thị D</h6>
+                <small class="text-muted">12/12/2024</small>
+              </div>
+              <div class="d-flex align-items-center mb-2">
+                <div class="rating-stars me-2">
+                  <span class="text-warning">★</span>
+                  <span class="text-warning">★</span>
+                  <span class="text-secondary">☆</span>
+                  <span class="text-secondary">☆</span>
+                  <span class="text-secondary">☆</span>
+                </div>
+              </div>
+              <p class="mb-0">Không hài lòng lắm, hệ thống không đúng như mô tả.</p>
+            </div>
+
+            <!-- Feedback Item 5 -->
+            <div class="feedback-item pb-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1 fw-bold">Hoàng Văn E</h6>
+                <small class="text-muted">10/12/2024</small>
+              </div>
+              <div class="d-flex align-items-center mb-2">
+                <div class="rating-stars me-2">
+                  <span class="text-warning">★</span>
+                  <span class="text-secondary">☆</span>
+                  <span class="text-secondary">☆</span>
+                  <span class="text-secondary">☆</span>
+                  <span class="text-secondary">☆</span>
+                </div>
+              </div>
+              <p class="mb-0">Phân biệt ảnh khá kém và lâu cần cải thiện.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <button class="btn btn-outline-secondary px-4" onclick="window.history.back()">Quay lại</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Reset filter button
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    const form = document.querySelector('form');
+    form.reset();
+  });
+
+  // Simple animation for progress bars
+  document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+      const width = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 300);
+    });
+  });
+</script>
+
+</body>
+</html>

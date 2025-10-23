@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Thêm Nhiều Mẫu</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .upload-area {
+      border: 2px dashed #dee2e6;
+      border-radius: 10px;
+      padding: 40px 20px;
+      text-align: center;
+      background-color: #f8f9fa;
+      transition: all 0.3s;
+      cursor: pointer;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .upload-area:hover {
+      border-color: #0d6efd;
+      background-color: #e9f2ff;
+    }
+    .upload-area.dragover {
+      border-color: #0d6efd;
+      background-color: #d4e6ff;
+    }
+    .upload-icon {
+      font-size: 48px;
+      color: #6c757d;
+      margin-bottom: 15px;
+    }
+    .preview-container {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .preview-item {
+      position: relative;
+      margin-bottom: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 10px;
+      background: white;
+    }
+    .preview-thumb {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .preview-info {
+      flex: 1;
+      padding-left: 15px;
+    }
+    .preview-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .crop-tool {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
+    .tool-btn {
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .file-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .file-item:last-child {
+      border-bottom: none;
+    }
+    .file-icon {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    .file-name {
+      flex: 1;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-size {
+      font-size: 12px;
+      color: #6c757d;
+    }
+    .file-remove {
+      margin-left: 10px;
+      color: #dc3545;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-files text-success me-2"></i>Thêm Nhiều Mẫu</h2>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Vùng upload và cắt ảnh/video -->
+      <div class="col-md-8">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Tải lên và Chỉnh sửa</h5>
+          </div>
+          <div class="card-body">
+            <!-- Vùng kéo thả -->
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-icon">
+                <i class="bi bi-cloud-arrow-up"></i>
+              </div>
+              <h5>Kéo và thả ảnh/video vào đây</h5>
+              <p class="text-muted">Hoặc nhấp để chọn tệp</p>
+              <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display: none;">
+              <button class="btn btn-primary mt-2" onclick="document.getElementById('fileInput').click()">
+                <i class="bi bi-folder2-open me-1"></i>Chọn Tệp
+              </button>
+            </div>
+
+            <!-- Danh sách tệp đã chọn -->
+            <div class="file-list mt-4" id="fileList">
+              <!-- Danh sách tệp sẽ được thêm vào đây -->
+            </div>
+
+            <!-- Vùng xem trước và công cụ cắt -->
+            <div class="preview-container" id="previewContainer">
+              <!-- Các mục xem trước sẽ được thêm vào đây -->
+            </div>
+
+            <!-- Công cụ cắt -->
+            <div class="crop-tool" id="cropTool">
+              <h6><i class="bi bi-scissors me-2"></i>Công cụ cắt</h6>
+              <div class="d-flex flex-wrap mb-3">
+                <button class="btn btn-outline-primary tool-btn">
+                  <i class="bi bi-square"></i> Vuông
+                </button>
+                <button class="btn btn-outline-primary tool-btn">
+                  <i class="bi bi-aspect-ratio"></i> Tự do
+                </button>
+                <button class="btn btn-outline-primary tool-btn">
+                  <i class="bi bi-arrow-clockwise"></i> Xoay
+                </button>
+                <button class="btn btn-outline-primary tool-btn">
+                  <i class="bi bi-arrow-left-right"></i> Lật ngang
+                </button>
+                <button class="btn btn-outline-primary tool-btn">
+                  <i class="bi bi-arrow-up-down"></i> Lật dọc
+                </button>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-success">
+                  <i class="bi bi-check-lg me-1"></i> Áp dụng
+                </button>
+                <button class="btn btn-secondary" onclick="hideCropTool()">
+                  <i class="bi bi-x-lg me-1"></i> Hủy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vùng thông tin mẫu -->
+      <div class="col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Thông tin Mẫu</h5>
+          </div>
+          <div class="card-body">
+            <form id="sampleForm">
+              <div class="mb-3">
+                <label class="form-label">Loại</label>
+                <select class="form-select" id="sampleType">
+                  <option value="image">Ảnh</option>
+                  <option value="video">Video</option>
+                  <option value="mixed">Hỗn hợp</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Nhãn</label>
+                <select class="form-select" id="sampleLabel">
+                  <option value="real">Thật</option>
+                  <option value="fake">Giả mạo</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Loại giả mạo</label>
+                <select class="form-select" id="fakeType">
+                  <option value="">-- Chọn loại giả mạo --</option>
+                  <option value="faceswap">Thay thế khuôn mặt</option>
+                  <option value="deepfake">Deepfake</option>
+                  <option value="gan">GAN</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Nguồn</label>
+                <input type="text" class="form-control" id="sampleSource" placeholder="Nhập nguồn...">
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Mô tả</label>
+                <textarea class="form-control" id="sampleDescription" rows="3" placeholder="Mô tả về mẫu..."></textarea>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Thẻ</label>
+                <input type="text" class="form-control" id="sampleTags" placeholder="Thêm thẻ, cách nhau bằng dấu phẩy">
+              </div>
+              
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-success">
+                  <i class="bi bi-check-lg me-1"></i> Thêm Mẫu
+                </button>
+                <button type="button" class="btn btn-outline-secondary">
+                  <i class="bi bi-arrow-left me-1"></i> Quay lại
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Thống kê -->
+        <div class="card shadow-sm mt-3">
+          <div class="card-header bg-white">
+            <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Thống kê</h6>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Tổng số tệp:</span>
+              <strong id="totalFiles">0</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Ảnh:</span>
+              <strong id="imageCount">0</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Video:</span>
+              <strong id="videoCount">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Biến lưu trữ danh sách tệp
+    let selectedFiles = [];
+    
+    // Xử lý sự kiện khi trang được tải
+    document.addEventListener('DOMContentLoaded', function() {
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+      const fileList = document.getElementById('fileList');
+      const previewContainer = document.getElementById('previewContainer');
+      
+      // Xử lý kéo thả tệp
+      uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+      
+      uploadArea.addEventListener('dragleave', function() {
+        uploadArea.classList.remove('dragover');
+      });
+      
+      uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+      });
+      
+      // Xử lý chọn tệp qua input
+      fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+      });
+      
+      // Cập nhật thống kê
+      updateStats();
+    });
+    
+    // Xử lý tệp được chọn
+    function handleFiles(files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Kiểm tra loại tệp
+        if (!file.type.match('image.*') && !file.type.match('video.*')) {
+          alert('Chỉ chấp nhận tệp ảnh hoặc video!');
+          continue;
+        }
+        
+        // Thêm tệp vào danh sách
+        selectedFiles.push(file);
+        
+        // Thêm vào danh sách hiển thị
+        addFileToList(file);
+        
+        // Tạo xem trước
+        createPreview(file);
+      }
+      
+      // Cập nhật thống kê
+      updateStats();
+    }
+    
+    // Thêm tệp vào danh sách hiển thị
+    function addFileToList(file) {
+      const fileList = document.getElementById('fileList');
+      
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      
+      const icon = file.type.match('image.*') ? 
+        '<i class="bi bi-file-image text-primary file-icon"></i>' : 
+        '<i class="bi bi-file-play text-danger file-icon"></i>';
+      
+      const size = formatFileSize(file.size);
+      
+      fileItem.innerHTML = `
+        ${icon}
+        <div class="file-name">${file.name}</div>
+        <div class="file-size">${size}</div>
+        <div class="file-remove" onclick="removeFile('${file.name}')">
+          <i class="bi bi-x-circle"></i>
+        </div>
+      `;
+      
+      fileList.appendChild(fileItem);
+    }
+    
+    // Tạo xem trước cho tệp
+    function createPreview(file) {
+      const previewContainer = document.getElementById('previewContainer');
+      
+      const previewItem = document.createElement('div');
+      previewItem.className = 'preview-item d-flex';
+      previewItem.id = `preview-${file.name}`;
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        if (file.type.match('image.*')) {
+          previewItem.innerHTML = `
+            <img src="${e.target.result}" class="preview-thumb" alt="${file.name}">
+            <div class="preview-info">
+              <h6>${file.name}</h6>
+              <p class="mb-1">Kích thước: ${formatFileSize(file.size)}</p>
+              <p class="mb-1">Loại: Ảnh</p>
+            </div>
+            <div class="preview-actions">
+              <button class="btn btn-sm btn-outline-primary" onclick="showCropTool('${file.name}')">
+                <i class="bi bi-scissors"></i>
+              </button>
+            </div>
+          `;
+        } else if (file.type.match('video.*')) {
+          previewItem.innerHTML = `
+            <video class="preview-thumb" src="${e.target.result}"></video>
+            <div class="preview-info">
+              <h6>${file.name}</h6>
+              <p class="mb-1">Kích thước: ${formatFileSize(file.size)}</p>
+              <p class="mb-1">Loại: Video</p>
+            </div>
+            <div class="preview-actions">
+              <button class="btn btn-sm btn-outline-primary" onclick="showCropTool('${file.name}')">
+                <i class="bi bi-scissors"></i>
+              </button>
+            </div>
+          `;
+        }
+        
+        previewContainer.appendChild(previewItem);
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    
+    // Xóa tệp khỏi danh sách
+    function removeFile(fileName) {
+      // Xóa khỏi mảng
+      selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+      
+      // Xóa khỏi danh sách hiển thị
+      const fileItems = document.querySelectorAll('.file-item');
+      fileItems.forEach(item => {
+        if (item.querySelector('.file-name').textContent === fileName) {
+          item.remove();
+        }
+      });
+      
+      // Xóa khỏi xem trước
+      const previewItem = document.getElementById(`preview-${fileName}`);
+      if (previewItem) {
+        previewItem.remove();
+      }
+      
+      // Cập nhật thống kê
+      updateStats();
+    }
+    
+    // Hiển thị công cụ cắt
+    function showCropTool(fileName) {
+      document.getElementById('cropTool').style.display = 'block';
+      // Trong thực tế, bạn sẽ khởi tạo công cụ cắt với tệp cụ thể
+    }
+    
+    // Ẩn công cụ cắt
+    function hideCropTool() {
+      document.getElementById('cropTool').style.display = 'none';
+    }
+    
+    // Cập nhật thống kê
+    function updateStats() {
+      const totalFiles = selectedFiles.length;
+      const imageCount = selectedFiles.filter(file => file.type.match('image.*')).length;
+      const videoCount = totalFiles - imageCount;
+      
+      document.getElementById('totalFiles').textContent = totalFiles;
+      document.getElementById('imageCount').textContent = imageCount;
+      document.getElementById('videoCount').textContent = videoCount;
+    }
+    
+    // Định dạng kích thước tệp
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+  </script>
+</body>
+</html>
