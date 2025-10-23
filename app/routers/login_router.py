@@ -26,6 +26,7 @@ class LoginRouter:
             # Đúng thì chuyển sang router Home (redirect)
             response = RedirectResponse(url="/home", status_code=303)
             response.set_cookie("username", user.username)  # hoặc session/token
+            response.set_cookie("user_id", str(user.id))
             return response
         return templates.TemplateResponse("login.html", {"request": request, "error": "Sai username hoặc password!"})
 

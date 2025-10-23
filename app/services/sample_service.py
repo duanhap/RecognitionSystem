@@ -1,7 +1,9 @@
+from typing import List
 from fastapi import UploadFile
 from app.repositories.sample_repository import SampleRepository
 class SampleService:
     def __init__(self, db):
+        self.db = db
         self.sample_repo = SampleRepository(db)
 
     def get_sample(self, sample_id: int):
@@ -10,8 +12,25 @@ class SampleService:
     def search_samples(self, search: str = None):
         return self.sample_repo.list_samples(search)
 
-    def create_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int):
-        return self.sample_repo.add_sample(type, label, description, file, user_id=user_id)
+    # def create_samples(self, type: str, label: str, description: str, files: List[UploadFile], user_id: int)-> bool:
+    #     count = 0
+    #     for file in files:
+    #         sample = self.sample_repo.add_sample(type, label, description, file, user_id)
+    #         if sample:
+    #             count += 1
+    #     if count == len(files):
+    #         return True
+    #     return False     
+    def create_samples(self, type: str, label: str, description: str, files: List[UploadFile], user_id: int):
+        try:
+            for file in files:
+                self.sample_repo.add_sample(type, label, description, file, user_id)
+            self.db.commit()
+            return True
+        except Exception as e:
+            self.db.rollback()
+            print(f"❌ Error adding samples: {e}")
+            return False
 
     def update_sample(self, sample_id: int, type: str, label: str, description: str) -> bool:
         return self.sample_repo.update_sample(sample_id, type, label, description)

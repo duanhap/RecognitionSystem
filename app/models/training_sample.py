@@ -4,7 +4,7 @@ from datetime import datetime
 from app.core.database import database
 
 class TrainingSample(database.Base):
-    __tablename__ = "training_samples"
+    __tablename__ = "tblTrainingSample"
 
     id = Column(Integer, primary_key=True, index=True)
     type = Column(String(20), nullable=False)         # "image" hoặc "video"
@@ -14,5 +14,5 @@ class TrainingSample(database.Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Quan hệ với User
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", backref="training_samples")
+    user_id = Column(Integer, ForeignKey("tblUser.id"))
+    user = relationship("User", backref="tblTrainingSample")
