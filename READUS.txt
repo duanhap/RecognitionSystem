@@ -46,3 +46,18 @@ router chịu trách nhiệm nhận request / trả response. (servlet)
 service xử lý logic. (controller)
 
 repository làm việc với DB. (DAO)
+
+cách chuyển file 20s sang file có thể xem đc trên web
+Mở thư mục chứa video (Shift + Chuột phải → Open PowerShell window here), rồi chạy:
+# Tạo thư mục mới tên là converted (nếu chưa có)
+$newFolder = "converted"
+if (!(Test-Path $newFolder)) {
+    New-Item -ItemType Directory -Path $newFolder | Out-Null
+}
+
+# Duyệt qua toàn bộ file .mp4 và convert sang thư mục mới
+foreach ($file in Get-ChildItem *.mp4) {
+    $name = [System.IO.Path]::GetFileNameWithoutExtension($file)
+    $outPath = Join-Path $newFolder "$name`_h264.mp4"
+    ffmpeg -i $file.FullName -c:v libx264 -crf 23 -preset fast -movflags +faststart $outPath
+}

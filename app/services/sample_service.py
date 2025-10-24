@@ -12,15 +12,13 @@ class SampleService:
     def search_samples(self, search: str = None):
         return self.sample_repo.list_samples(search)
 
-    # def create_samples(self, type: str, label: str, description: str, files: List[UploadFile], user_id: int)-> bool:
-    #     count = 0
-    #     for file in files:
-    #         sample = self.sample_repo.add_sample(type, label, description, file, user_id)
-    #         if sample:
-    #             count += 1
-    #     if count == len(files):
-    #         return True
-    #     return False     
+    def create_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int, crop_info: dict = None) -> bool:
+        try:
+            self.sample_repo.add_sample(type, label, description, file, user_id, crop_info)
+            return True
+        except Exception as e:
+            print(f"❌ Error adding samples: {e}")
+            return False 
     def create_samples(self, type: str, label: str, description: str, files: List[UploadFile], user_id: int):
         try:
             for file in files:

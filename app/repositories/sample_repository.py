@@ -1,8 +1,10 @@
 from datetime import datetime
 import os
+import shutil
 from fastapi import APIRouter, Depends, Request, UploadFile
 from sqlalchemy.orm import Session
 from app.models.training_sample import TrainingSample
+from app.services.media_crop_service import save_temp_file,crop_image,crop_video
 class SampleRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -16,7 +18,10 @@ class SampleRepository:
             query = query.filter(TrainingSample.id == search)  # tìm theo ID
         return query.all()
 
-    def add_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int):
+    def add_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int,crop_info: dict = None) -> TrainingSample:
+        # Nếu có crop_info, xử lý crop ở đây (giả sử crop_info chứa tọa độ crop)
+        #Lưu file tạm
+        temp_path = save_temp_file(file)
         # --- 1. Tạo đường dẫn thư mục dựa theo loại file và nhãn ---
         base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "dataset")
         # => từ repositories/ lên app/, rồi lên project/, rồi tới dataset/
@@ -30,9 +35,16 @@ class SampleRepository:
         file_path = os.path.join(save_dir, filename)
 
         # --- 4. Ghi file ---
-        with open(file_path, "wb") as f:
-            while chunk := file.file.read(1024 * 1024):
-                f.write(chunk)
+        if crop_info:
+            if type == "image":
+                crop_image(temp_path, file_path, crop_info)
+            elif type == "video":
+                crop_video(temp_path, file_path, crop_info)
+        else:
+            shutil.move(temp_path, file_path)
+            with open(file_path, "wb") as f:
+                while chunk := file.file.read(1024 * 1024):
+                    f.write(chunk)
 
         # --- 5. Lưu thông tin vào DB ---
         sample = TrainingSample(

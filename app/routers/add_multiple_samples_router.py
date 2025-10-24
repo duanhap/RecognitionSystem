@@ -13,8 +13,8 @@ templates = Jinja2Templates(directory="app/templates")
 class AddMultipleSamplesRouter:
     def __init__(self):
         self.router = APIRouter()
-        self.router.add_api_route("/add_sample", self.add_sample_page, methods=["GET"], response_class=HTMLResponse)
-        self.router.add_api_route("/add_sample", self.add_sample, methods=["POST"])
+        self.router.add_api_route("/add_multiple_samples", self.add_sample_page, methods=["GET"], response_class=HTMLResponse)
+        self.router.add_api_route("/add_multiple_samples", self.add_sample, methods=["POST"])
 
     async def add_sample_page(self, request: Request):
         return templates.TemplateResponse("add_multiple_samples.html", {"request": request})

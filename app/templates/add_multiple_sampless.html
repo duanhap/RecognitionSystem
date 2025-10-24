@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Single Sample</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Cropper.js -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --success-color: #4cc9f0;
+      --light-bg: #f8f9fa;
+      --card-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    body { 
+      background-color: var(--light-bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border-radius: 12px 12px 0 0 !important;
+      padding: 1.5rem;
+    }
+    
+    .btn-primary {
+      background: var(--primary-color);
+      border: none;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background: var(--secondary-color);
+    }
+    
+    .preview-container {
+      border: 2px dashed #dee2e6;
+      border-radius: 8px;
+      padding: 1rem;
+      background-color: #fdfdfd;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .preview-container img, .preview-container video {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .control-panel {
+      background-color: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .range-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .range-controls input[type="range"] {
+      flex: 1;
+    }
+    
+    .time-inputs {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .time-inputs .input-group {
+      flex: 1;
+    }
+    
+    .preview-section {
+      margin-top: 1.5rem;
+    }
+    
+    .crop-preview {
+      width: 200px;
+      height: 150px;
+      overflow: hidden;
+      border-radius: 8px;
+      margin: 0 auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border: 2px solid #4361ee;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .step-indicator {
+      display: flex;
+      margin-bottom: 1.5rem;
+      justify-content: center;
+    }
+    
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      max-width: 150px;
+    }
+    
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .step.active .step-number {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 0.85rem;
+      text-align: center;
+      color: #6c757d;
+    }
+    
+    .step.active .step-label {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background-color: #e9ecef;
+      margin: 20px 10px 0;
+    }
+    
+    .file-info {
+      background-color: #e7f1ff;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .alert-success {
+      background-color: #d1fae5;
+      border-color: #a7f3d0;
+      color: #065f46;
+    }
+    
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      display: inline-block;
+    }
+    
+    .trim-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 10;
+    }
+    
+    .crop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 5;
+      display: none;
+    }
+    
+    .crop-area {
+      position: absolute;
+      border: 2px dashed #ff0000;
+      background: rgba(255,0,0,0.1);
+      cursor: move;
+      z-index: 6;
+    }
+    
+    .crop-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #ff0000;
+      border: 1px solid white;
+      border-radius: 50%;
+    }
+    
+    .handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
+    .handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
+    .handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+    .handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
+    
+    .video-crop-instruction {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 7;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4 mb-5">
+    <div class="card">
+      <div class="card-header text-center">
+        <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add Single Sample</h2>
+      </div>
+      
+      <div class="card-body p-4">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <div class="step active" id="step1">
+            <div class="step-number">1</div>
+            <div class="step-label">File Details</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step2">
+            <div class="step-number">2</div>
+            <div class="step-label">Crop & Trim</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step3">
+            <div class="step-number">3</div>
+            <div class="step-label">Preview & Save</div>
+          </div>
+        </div>
+
+        <form id="singleForm" method="post" enctype="multipart/form-data">
+          <!-- Step 1: File Details -->
+          <div class="step-content" id="step1-content">
+            <div class="row">
+              <div class="col-md-6">
+                <!-- Type -->
+                <div class="mb-3">
+                  <label class="form-label"><strong>Type</strong></label>
+                  <select class="form-select" id="typeSelect" name="type" required>
+                    <option value="">-- Select Type --</option>
+                    <option value="image">Image</option>
+                    <option value="video">Video</option>
+                  </select>
+                </div>
+
+                <!-- Label -->
+                <div class="mb-3">
+                  <label class="form-label"><strong>Label</strong></label>
+                  <select class="form-select" name="label" required>
+                    <option value="real">Real</option>
+                    <option value="fake">Fake</option>
+                  </select>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                  <label class="form-label"><strong>Description</strong></label>
+                  <textarea class="form-control" name="description" rows="3" placeholder="Source: ..." id="descriptionInput"></textarea>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <!-- File Upload -->
+                <div class="mb-3">
+                  <label class="form-label"><strong>Upload File</strong></label>
+                  <div class="preview-container" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Drag & drop your file here or click to browse</p>
+                    <input type="file" id="fileInput" name="file" class="d-none" accept="image/*,video/*" required>
+                    <button type="button" class="btn btn-outline-primary mt-2" id="browseBtn">Browse Files</button>
+                  </div>
+                </div>
+                
+                <!-- File Info -->
+                <div class="file-info d-none" id="fileInfo">
+                  <div class="d-flex justify-content-between">
+                    <span><strong>File:</strong> <span id="fileName"></span></span>
+                    <span><strong>Size:</strong> <span id="fileSize"></span></span>
+                  </div>
+                  <div class="mt-1">
+                    <span><strong>Type:</strong> <span id="fileType"></span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-secondary" onclick="history.back()">
+                <i class="fas fa-arrow-left me-1"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="nextStep1">
+                Next <i class="fas fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 2: Crop & Trim -->
+          <div class="step-content d-none" id="step2-content">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="preview-container" id="preview-container">
+                  <p class="text-muted">Preview will appear here</p>
+                </div>
+                
+                <!-- Video Crop Overlay -->
+                <div id="video-crop-overlay" class="crop-overlay">
+                  <div class="video-crop-instruction" id="cropInstruction">
+                    Drag to move, drag handles to resize
+                  </div>
+                  <div id="cropArea" class="crop-area" style="display: none;">
+                    <div class="crop-handle handle-nw"></div>
+                    <div class="crop-handle handle-ne"></div>
+                    <div class="crop-handle handle-sw"></div>
+                    <div class="crop-handle handle-se"></div>
+                  </div>
+                </div>
+                
+                <!-- Video Controls Overlay -->
+                <div id="video-overlay" class="trim-overlay d-none">
+                  <div>
+                    <span>Start: <span id="currentStartTime">0</span>s</span> - 
+                    <span>End: <span id="currentEndTime">0</span>s</span>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="playTrim">
+                      <i class="fas fa-play"></i> Play Trim
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="control-panel">
+                  <h5><i class="fas fa-crop-alt me-2"></i>Crop Controls</h5>
+                  
+                  <!-- Image Crop Controls -->
+                  <div id="image-controls" class="d-none">
+                    <p class="text-muted small">Drag to select crop area or adjust manually:</p>
+                    
+                    <div class="mb-2">
+                      <label class="form-label small">Position: <span id="cropPos">0,0</span></label>
+                    </div>
+                    
+                    <div class="mb-2">
+                      <label class="form-label small">Size: <span id="cropSize">0x0</span></label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                      <button type="button" class="btn btn-outline-primary btn-sm" id="resetCrop">
+                        <i class="fas fa-redo me-1"></i> Reset Crop
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Video Controls -->
+                  <div id="video-controls" class="d-none">
+                    <h5><i class="fas fa-film me-2"></i>Video Controls</h5>
+                    
+                    <div class="mb-3">
+                      <label class="form-label">Trim Video</label>
+                      <div class="time-inputs">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Start (s)</span>
+                          <input type="number" id="startTime" class="form-control" placeholder="0" min="0" step="0.1" value="0">
+                        </div>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">End (s)</span>
+                          <input type="number" id="endTime" class="form-control" placeholder="0" min="0" step="0.1" value="0">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label class="form-label">Timeline</label>
+                      <div class="range-controls">
+                        <span class="small">0s</span>
+                        <input type="range" id="startRange" min="0" step="0.1" value="0" class="form-range">
+                        <input type="range" id="endRange" min="0" step="0.1" value="0" class="form-range">
+                        <span class="small" id="maxDuration">0s</span>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label class="form-label">Video Crop</label>
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="enableVideoCrop">
+                        <label class="form-check-label" for="enableVideoCrop">
+                          Enable frame cropping
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div id="video-crop-controls" class="d-none">
+                      <div class="mb-2">
+                        <label class="form-label small">Crop Area: <span id="videoCropSize">0x0</span></label>
+                      </div>
+                      <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="resetVideoCrop">
+                          <i class="fas fa-crop me-1"></i> Reset Video Crop
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Crop Preview -->
+                <div class="preview-section mt-3">
+                  <h6><i class="fas fa-eye me-2"></i>Crop Preview</h6>
+                  <div class="crop-preview" id="cropPreview">
+                    <span class="text-muted small">Preview will appear here</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-secondary" id="prevStep2">
+                <i class="fas fa-arrow-left me-1"></i> Previous
+              </button>
+              <button type="button" class="btn btn-primary" id="nextStep2">
+                Next <i class="fas fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 3: Preview & Save -->
+          <div class="step-content d-none" id="step3-content">
+            <div class="row">
+              <div class="col-md-6">
+                <h5><i class="fas fa-info-circle me-2"></i>Sample Details</h5>
+                <div class="mb-3">
+                  <label class="form-label"><strong>Type</strong></label>
+                  <p id="previewType">-</p>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label"><strong>Label</strong></label>
+                  <p id="previewLabel">-</p>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label"><strong>Description</strong></label>
+                  <p id="previewDescription">-</p>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label"><strong>Crop Data</strong></label>
+                  <pre id="previewCropData" class="bg-light p-2 rounded small">-</pre>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <h5><i class="fas fa-file me-2"></i>Final Preview</h5>
+                <div class="preview-container" id="finalPreview">
+                  <p class="text-muted">Final preview will appear here</p>
+                </div>
+                <div class="mt-2 text-center">
+                  <small class="text-muted">Note: This is a preview. Actual crop/trim will be applied when saving.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-secondary" id="prevStep3">
+                <i class="fas fa-arrow-left me-1"></i> Previous
+              </button>
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-save me-1"></i> Save Sample
+              </button>
+            </div>
+          </div>
+
+          <input type="hidden" name="crop_data" id="cropData">
+          <input type="hidden" name="user_id" value="1">
+        </form>
+
+        <div id="messageBox" class="alert alert-info mt-3 d-none text-center"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const fileInput = document.getElementById('fileInput');
+    const browseBtn = document.getElementById('browseBtn');
+    const dropZone = document.getElementById('dropZone');
+    const previewContainer = document.getElementById('preview-container');
+    const typeSelect = document.getElementById('typeSelect');
+    const videoControls = document.getElementById('video-controls');
+    const imageControls = document.getElementById('image-controls');
+    const cropDataInput = document.getElementById('cropData');
+    const messageBox = document.getElementById('messageBox');
+    const startTime = document.getElementById('startTime');
+    const endTime = document.getElementById('endTime');
+    const startRange = document.getElementById('startRange');
+    const endRange = document.getElementById('endRange');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileType = document.getElementById('fileType');
+    const finalPreview = document.getElementById('finalPreview');
+    const previewType = document.getElementById('previewType');
+    const previewLabel = document.getElementById('previewLabel');
+    const previewDescription = document.getElementById('previewDescription');
+    const previewCropData = document.getElementById('previewCropData');
+    const videoOverlay = document.getElementById('video-overlay');
+    const currentStartTime = document.getElementById('currentStartTime');
+    const currentEndTime = document.getElementById('currentEndTime');
+    const playTrimBtn = document.getElementById('playTrim');
+    const enableVideoCrop = document.getElementById('enableVideoCrop');
+    const videoCropControls = document.getElementById('video-crop-controls');
+    const videoCropSize = document.getElementById('videoCropSize');
+    const resetVideoCropBtn = document.getElementById('resetVideoCrop');
+    const cropPos = document.getElementById('cropPos');
+    const cropSize = document.getElementById('cropSize');
+    const maxDuration = document.getElementById('maxDuration');
+    const videoCropOverlay = document.getElementById('video-crop-overlay');
+    const cropArea = document.getElementById('cropArea');
+    const cropInstruction = document.getElementById('cropInstruction');
+    const cropPreview = document.getElementById('cropPreview');
+    
+    // Step navigation elements
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step1Content = document.getElementById('step1-content');
+    const step2Content = document.getElementById('step2-content');
+    const step3Content = document.getElementById('step3-content');
+    const nextStep1 = document.getElementById('nextStep1');
+    const nextStep2 = document.getElementById('nextStep2');
+    const prevStep2 = document.getElementById('prevStep2');
+    const prevStep3 = document.getElementById('prevStep3');
+    
+    // Global variables
+    let cropper = null;
+    let currentVideo = null;
+    let currentFile = null;
+    let currentFileUrl = null;
+    let cropData = {
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 0,
+      width: 0,
+      height: 0,
+      start: 0,
+      end: 0
+    };
+    let videoDuration = 0;
+    let isCroppingVideo = false;
+    let isDragging = false;
+    let isResizing = false;
+    let dragStartX, dragStartY;
+    let cropStartX, cropStartY, cropStartWidth, cropStartHeight;
+
+    // Event Listeners
+    browseBtn.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '#4361ee';
+      dropZone.style.backgroundColor = '#f0f4ff';
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = '#dee2e6';
+      dropZone.style.backgroundColor = '#fdfdfd';
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '#dee2e6';
+      dropZone.style.backgroundColor = '#fdfdfd';
+      
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelection();
+      }
+    });
+
+    fileInput.addEventListener('change', handleFileSelection);
+    
+    // Step Navigation
+    nextStep1.addEventListener('click', () => {
+      if (!currentFile) {
+        alert('Please select a file first');
+        return;
+      }
+      
+      if (!typeSelect.value) {
+        alert('Please select a file type');
+        return;
+      }
+      
+      step1.classList.remove('active');
+      step2.classList.add('active');
+      step1Content.classList.add('d-none');
+      step2Content.classList.remove('d-none');
+      
+      loadPreview();
+    });
+    
+    nextStep2.addEventListener('click', () => {
+      updatePreviewStep();
+      
+      step2.classList.remove('active');
+      step3.classList.add('active');
+      step2Content.classList.add('d-none');
+      step3Content.classList.remove('d-none');
+    });
+    
+    prevStep2.addEventListener('click', () => {
+      step2.classList.remove('active');
+      step1.classList.add('active');
+      step2Content.classList.add('d-none');
+      step1Content.classList.remove('d-none');
+    });
+    
+    prevStep3.addEventListener('click', () => {
+      step3.classList.remove('active');
+      step2.classList.add('active');
+      step3Content.classList.add('d-none');
+      step2Content.classList.remove('d-none');
+    });
+
+    // File handling
+    function handleFileSelection() {
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      currentFile = file;
+      currentFileUrl = URL.createObjectURL(file);
+      
+      // Auto-detect type if not set
+      if (!typeSelect.value) {
+        if (file.type.startsWith('image/')) {
+          typeSelect.value = 'image';
+        } else if (file.type.startsWith('video/')) {
+          typeSelect.value = 'video';
+        }
+      }
+      
+      // Update file info
+      fileInfo.classList.remove('d-none');
+      fileName.textContent = file.name;
+      fileSize.textContent = formatFileSize(file.size);
+      fileType.textContent = file.type.split('/')[1].toUpperCase();
+      
+      // Update dropzone text
+      dropZone.innerHTML = `
+        <i class="fas fa-file-${file.type.includes('image') ? 'image' : 'video'} fa-2x text-primary mb-2"></i>
+        <p class="mb-1"><strong>${file.name}</strong></p>
+        <p class="text-muted small">${formatFileSize(file.size)} • ${file.type.split('/')[1].toUpperCase()}</p>
+        <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="changeFileBtn">Change File</button>
+      `;
+      
+      document.getElementById('changeFileBtn').addEventListener('click', () => {
+        fileInput.click();
+      });
+    }
+
+    function loadPreview() {
+      previewContainer.innerHTML = '';
+      videoControls.classList.add('d-none');
+      imageControls.classList.add('d-none');
+      videoOverlay.classList.add('d-none');
+      videoCropOverlay.style.display = 'none';
+      cropArea.style.display = 'none';
+      cropInstruction.style.display = 'none';
+      
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+
+      if (!currentFile) return;
+      
+      const type = typeSelect.value;
+
+      // Image
+      if (type === 'image') {
+        imageControls.classList.remove('d-none');
+        
+        const img = document.createElement('img');
+        img.src = currentFileUrl;
+        img.id = 'imageToCrop';
+        previewContainer.appendChild(img);
+        
+        img.addEventListener('load', () => {
+          // Initialize crop data with full image
+          cropData = {
+            x: 0,
+            y: 0,
+            x2: img.naturalWidth,
+            y2: img.naturalHeight,
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            start: 0,
+            end: 0
+          };
+          
+          updateCropDisplay();
+          updateCropPreview();
+          
+          cropper = new Cropper(img, {
+            viewMode: 1,
+            movable: true,
+            zoomable: true,
+            scalable: true,
+            crop(event) {
+              cropData = {
+                x: Math.round(event.detail.x),
+                y: Math.round(event.detail.y),
+                x2: Math.round(event.detail.x + event.detail.width),
+                y2: Math.round(event.detail.y + event.detail.height),
+                width: Math.round(event.detail.width),
+                height: Math.round(event.detail.height),
+                start: 0,
+                end: 0
+              };
+              
+              updateCropDisplay();
+              updateCropPreview();
+            }
+          });
+        });
+      }
+
+      // Video
+      else if (type === 'video') {
+        videoControls.classList.remove('d-none');
+        videoOverlay.classList.remove('d-none');
+        
+        const videoWrapper = document.createElement('div');
+        videoWrapper.className = 'video-wrapper';
+        
+        const video = document.createElement('video');
+        video.src = currentFileUrl;
+        video.controls = true;
+        video.muted = true;
+        video.id = 'videoToTrim';
+        videoWrapper.appendChild(video);
+        previewContainer.appendChild(videoWrapper);
+        previewContainer.appendChild(videoCropOverlay);
+        previewContainer.appendChild(videoOverlay);
+        
+        currentVideo = video;
+
+        video.addEventListener('loadedmetadata', () => {
+          videoDuration = video.duration;
+          const duration = videoDuration.toFixed(1);
+          
+          startRange.max = duration;
+          endRange.max = duration;
+          endRange.value = duration;
+          endTime.value = duration;
+          maxDuration.textContent = `${duration}s`;
+          
+          // Initialize crop data with full video and duration
+          cropData = {
+            x: 0,
+            y: 0,
+            x2: video.videoWidth,
+            y2: video.videoHeight,
+            width: video.videoWidth,
+            height: video.videoHeight,
+            start: 0,
+            end: parseFloat(duration)
+          };
+          
+          updateVideoOverlay();
+          updateCropPreview();
+          
+          // Initialize crop area for video
+          initVideoCrop();
+        });
+        
+        video.addEventListener('timeupdate', () => {
+          if (video.currentTime >= cropData.end) {
+            video.pause();
+          }
+        });
+      }
+    }
+
+    // Initialize video crop functionality
+    function initVideoCrop() {
+      if (!currentVideo) return;
+      
+      // Show crop overlay when enabled
+      enableVideoCrop.addEventListener('change', function() {
+        isCroppingVideo = this.checked;
+        videoCropControls.classList.toggle('d-none', !isCroppingVideo);
+        videoCropOverlay.style.display = isCroppingVideo ? 'block' : 'none';
+        cropInstruction.style.display = isCroppingVideo ? 'block' : 'none';
+        
+        if (isCroppingVideo) {
+          // Initialize crop area
+          const videoRect = currentVideo.getBoundingClientRect();
+          const containerRect = previewContainer.getBoundingClientRect();
+          
+          // Set initial crop area (80% of video size, centered)
+          const cropWidth = videoRect.width * 0.8;
+          const cropHeight = videoRect.height * 0.8;
+          const cropX = (videoRect.width - cropWidth) / 2;
+          const cropY = (videoRect.height - cropHeight) / 2;
+          
+          cropArea.style.width = cropWidth + 'px';
+          cropArea.style.height = cropHeight + 'px';
+          cropArea.style.left = cropX + 'px';
+          cropArea.style.top = cropY + 'px';
+          cropArea.style.display = 'block';
+          
+          // Calculate actual pixel coordinates relative to video
+          const scaleX = currentVideo.videoWidth / videoRect.width;
+          const scaleY = currentVideo.videoHeight / videoRect.height;
+          
+          cropData = {
+            ...cropData,
+            x: Math.round(cropX * scaleX),
+            y: Math.round(cropY * scaleY),
+            x2: Math.round((cropX + cropWidth) * scaleX),
+            y2: Math.round((cropY + cropHeight) * scaleY),
+            width: Math.round(cropWidth * scaleX),
+            height: Math.round(cropHeight * scaleY)
+          };
+          
+          updateCropDisplay();
+          updateCropPreview();
+          
+          // Add event listeners for crop area
+          setupCropAreaEvents();
+        } else {
+          cropArea.style.display = 'none';
+          // Reset crop data
+          cropData = {
+            ...cropData,
+            x: 0,
+            y: 0,
+            x2: currentVideo.videoWidth,
+            y2: currentVideo.videoHeight,
+            width: currentVideo.videoWidth,
+            height: currentVideo.videoHeight
+          };
+          updateCropPreview();
+        }
+      });
+    }
+
+    // Setup crop area drag and resize events
+    function setupCropAreaEvents() {
+      const handles = cropArea.querySelectorAll('.crop-handle');
+      
+      // Mouse down on crop area (for dragging)
+      cropArea.addEventListener('mousedown', startDrag);
+      cropArea.addEventListener('touchstart', startDrag);
+      
+      // Mouse down on handles (for resizing)
+      handles.forEach(handle => {
+        handle.addEventListener('mousedown', startResize);
+        handle.addEventListener('touchstart', startResize);
+      });
+      
+      // Global mouse events
+      document.addEventListener('mousemove', doDragResize);
+      document.addEventListener('touchmove', doDragResize);
+      document.addEventListener('mouseup', stopDragResize);
+      document.addEventListener('touchend', stopDragResize);
+    }
+
+    function startDrag(e) {
+      if (!isCroppingVideo) return;
+      e.preventDefault();
+      isDragging = true;
+      
+      const rect = cropArea.getBoundingClientRect();
+      dragStartX = (e.clientX || e.touches[0].clientX) - rect.left;
+      dragStartY = (e.clientY || e.touches[0].clientY) - rect.top;
+      
+      cropArea.style.cursor = 'grabbing';
+    }
+
+    function startResize(e) {
+      if (!isCroppingVideo) return;
+      e.preventDefault();
+      e.stopPropagation();
+      isResizing = true;
+
+      const rect = cropArea.getBoundingClientRect();
+      const containerRect = previewContainer.getBoundingClientRect();
+       // Ghi lại vị trí crop tương đối trong container
+      cropStartX = rect.left - containerRect.left;
+      cropStartY = rect.top - containerRect.top;
+      cropStartWidth = rect.width;
+      cropStartHeight = rect.height;
+
+      // 🟢 Ghi lại vị trí chuột ban đầu
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      resizeStartX = clientX - containerRect.left;
+      resizeStartY = clientY - containerRect.top;
+
+        
+      this.setAttribute('data-resize', this.className.includes('nw') ? 'nw' : 
+                       this.className.includes('ne') ? 'ne' :
+                       this.className.includes('sw') ? 'sw' : 'se');
+    }
+
+    function doDragResize(e) {
+      if (!isDragging && !isResizing) return;
+      e.preventDefault();
+      
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      
+      if (isDragging) {
+        // Dragging the entire crop area
+        const containerRect = previewContainer.getBoundingClientRect();
+        const videoRect = currentVideo.getBoundingClientRect();
+        
+        let newX = clientX - containerRect.left - dragStartX;
+        let newY = clientY - containerRect.top - dragStartY;
+        
+        // Constrain to video bounds
+        newX = Math.max(0, Math.min(newX, videoRect.width - cropArea.offsetWidth));
+        newY = Math.max(0, Math.min(newY, videoRect.height - cropArea.offsetHeight));
+        
+        cropArea.style.left = newX + 'px';
+        cropArea.style.top = newY + 'px';
+        
+        // Update crop data
+        const scaleX = currentVideo.videoWidth / videoRect.width;
+        const scaleY = currentVideo.videoHeight / videoRect.height;
+        
+        cropData.x = Math.round(newX * scaleX);
+        cropData.y = Math.round(newY * scaleY);
+        cropData.x2 = Math.round((newX + cropArea.offsetWidth) * scaleX);
+        cropData.y2 = Math.round((newY + cropArea.offsetHeight) * scaleY);
+        cropData.width = Math.round(cropArea.offsetWidth * scaleX);
+        cropData.height = Math.round(cropArea.offsetHeight * scaleY);
+        
+      } else if (isResizing) {
+        // Resizing the crop area
+        const handleType = document.querySelector('.crop-handle[data-resize]').getAttribute('data-resize');
+        const containerRect = previewContainer.getBoundingClientRect();
+        const videoRect = currentVideo.getBoundingClientRect();
+        
+
+        // ❗ Tính toạ độ chuột tương đối trong container
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        const relativeX = clientX - containerRect.left;
+        const relativeY = clientY - containerRect.top;
+        let newX = cropStartX;
+        let newY = cropStartY;
+        let newWidth = cropStartWidth;
+        let newHeight = cropStartHeight;
+        
+        // const deltaX = clientX - cropStartX;
+        // const deltaY = clientY - cropStartY;
+        const deltaX = relativeX - resizeStartX;
+        const deltaY = relativeY - resizeStartY;
+        
+        switch (handleType) {
+          case 'nw':
+            newX = cropStartX + deltaX;
+            newY = cropStartY + deltaY;
+            newWidth = cropStartWidth - deltaX;
+            newHeight = cropStartHeight - deltaY;
+            break;
+          case 'ne':
+            newY = cropStartY + deltaY;
+            newWidth = cropStartWidth + deltaX;
+            newHeight = cropStartHeight - deltaY;
+            break;
+          case 'sw':
+            newX = cropStartX + deltaX;
+            newWidth = cropStartWidth - deltaX;
+            newHeight = cropStartHeight + deltaY;
+            break;
+          case 'se':
+            newWidth = cropStartWidth + deltaX;
+            newHeight = cropStartHeight + deltaY;
+            break;
+        }
+        
+        // Constrain minimum size and bounds
+        const minSize = 50;
+        newWidth = Math.max(minSize, Math.min(newWidth, videoRect.width - newX));
+        newHeight = Math.max(minSize, Math.min(newHeight, videoRect.height - newY));
+        newX = Math.max(0, Math.min(newX, videoRect.width - minSize));
+        newY = Math.max(0, Math.min(newY, videoRect.height - minSize));
+        
+        cropArea.style.left = newX + 'px';
+        cropArea.style.top = newY + 'px';
+        cropArea.style.width = newWidth + 'px';
+        cropArea.style.height = newHeight + 'px';
+        
+        // Update crop data
+        const scaleX = currentVideo.videoWidth / videoRect.width;
+        const scaleY = currentVideo.videoHeight / videoRect.height;
+        
+        cropData.x = Math.round(newX * scaleX);
+        cropData.y = Math.round(newY * scaleY);
+        cropData.x2 = Math.round((newX + newWidth) * scaleX);
+        cropData.y2 = Math.round((newY + newHeight) * scaleY);
+        cropData.width = Math.round(newWidth * scaleX);
+        cropData.height = Math.round(newHeight * scaleY);
+      }
+      
+      updateCropDisplay();
+      updateCropPreview();
+    }
+
+    function stopDragResize() {
+      isDragging = false;
+      isResizing = false;
+      cropArea.style.cursor = 'move';
+      
+      // Remove resize data attribute
+      const resizeHandle = document.querySelector('.crop-handle[data-resize]');
+      if (resizeHandle) {
+        resizeHandle.removeAttribute('data-resize');
+      }
+    }
+
+    // Link range and number inputs for video
+    startRange.addEventListener('input', () => {
+      startTime.value = startRange.value;
+      cropData.start = parseFloat(startRange.value);
+      updateVideoOverlay();
+      updateCropPreview();
+    });
+    
+    endRange.addEventListener('input', () => {
+      endTime.value = endRange.value;
+      cropData.end = parseFloat(endRange.value);
+      updateVideoOverlay();
+      updateCropPreview();
+    });
+    
+    startTime.addEventListener('input', () => {
+      startRange.value = startTime.value;
+      cropData.start = parseFloat(startTime.value);
+      updateVideoOverlay();
+      updateCropPreview();
+    });
+    
+    endTime.addEventListener('input', () => {
+      endRange.value = endTime.value;
+      cropData.end = parseFloat(endTime.value);
+      updateVideoOverlay();
+      updateCropPreview();
+    });
+
+    // Update video overlay
+    function updateVideoOverlay() {
+      currentStartTime.textContent = cropData.start.toFixed(1);
+      currentEndTime.textContent = cropData.end.toFixed(1);
+    }
+
+    // Update crop display
+    function updateCropDisplay() {
+      if (typeSelect.value === 'image') {
+        cropPos.textContent = `${cropData.x},${cropData.y}`;
+        cropSize.textContent = `${cropData.width}x${cropData.height}`;
+      } else if (typeSelect.value === 'video' && isCroppingVideo) {
+        videoCropSize.textContent = `${cropData.width}x${cropData.height}`;
+      }
+    }
+
+    // Update crop preview
+    function updateCropPreview() {
+      const type = typeSelect.value;
+      
+      cropPreview.innerHTML = '';
+      
+      if (type === 'image') {
+        // Create a representation of the cropped area
+        const previewCanvas = document.createElement('canvas');
+        const ctx = previewCanvas.getContext('2d');
+        
+        // Set canvas size proportional to crop area but max 200x150
+        const scale = Math.min(200 / cropData.width, 150 / cropData.height, 1);
+        previewCanvas.width = cropData.width * scale;
+        previewCanvas.height = cropData.height * scale;
+        
+        ctx.fillStyle = '#e9ecef';
+        ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+        
+        ctx.strokeStyle = '#4361ee';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, previewCanvas.width, previewCanvas.height);
+        
+        ctx.fillStyle = '#4361ee';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${cropData.width} x ${cropData.height}`, previewCanvas.width/2, previewCanvas.height/2);
+        
+        cropPreview.appendChild(previewCanvas);
+        
+      } else if (type === 'video') {
+        const previewContent = document.createElement('div');
+        previewContent.className = 'text-center p-2';
+        
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-video text-muted mb-2';
+        
+        const trimInfo = document.createElement('p');
+        trimInfo.className = 'small text-muted mb-1';
+        trimInfo.textContent = `Trim: ${cropData.start.toFixed(1)}s - ${cropData.end.toFixed(1)}s`;
+        
+        previewContent.appendChild(icon);
+        previewContent.appendChild(trimInfo);
+        
+        if (isCroppingVideo) {
+          const cropInfo = document.createElement('p');
+          cropInfo.className = 'small text-muted';
+          cropInfo.textContent = `Crop: ${cropData.width} x ${cropData.height}`;
+          previewContent.appendChild(cropInfo);
+        }
+        
+        cropPreview.appendChild(previewContent);
+      }
+    }
+
+    // Play trim for video
+    playTrimBtn.addEventListener('click', () => {
+      if (currentVideo) {
+        currentVideo.currentTime = cropData.start;
+        currentVideo.play();
+      }
+    });
+
+    // Reset video crop
+    resetVideoCropBtn.addEventListener('click', () => {
+      if (currentVideo && isCroppingVideo) {
+        const videoRect = currentVideo.getBoundingClientRect();
+        
+        // Reset to full video
+        cropArea.style.left = '0px';
+        cropArea.style.top = '0px';
+        cropArea.style.width = videoRect.width + 'px';
+        cropArea.style.height = videoRect.height + 'px';
+        
+        // Update crop data
+        const scaleX = currentVideo.videoWidth / videoRect.width;
+        const scaleY = currentVideo.videoHeight / videoRect.height;
+        
+        cropData = {
+          ...cropData,
+          x: 0,
+          y: 0,
+          x2: currentVideo.videoWidth,
+          y2: currentVideo.videoHeight,
+          width: currentVideo.videoWidth,
+          height: currentVideo.videoHeight
+        };
+        
+        updateCropDisplay();
+        updateCropPreview();
+      }
+    });
+
+    // Reset crop for image
+    document.getElementById('resetCrop').addEventListener('click', () => {
+      if (cropper) {
+        cropper.reset();
+        const canvasData = cropper.getCanvasData();
+        cropData = {
+          x: Math.round(canvasData.left),
+          y: Math.round(canvasData.top),
+          x2: Math.round(canvasData.left + canvasData.width),
+          y2: Math.round(canvasData.top + canvasData.height),
+          width: Math.round(canvasData.width),
+          height: Math.round(canvasData.height),
+          start: 0,
+          end: 0
+        };
+        updateCropDisplay();
+        updateCropPreview();
+      }
+    });
+
+    // Update preview in step 3
+    function updatePreviewStep() {
+      const formData = new FormData(document.getElementById('singleForm'));
+      
+      previewType.textContent = formData.get('type');
+      previewLabel.textContent = formData.get('label');
+      previewDescription.textContent = formData.get('description') || '-';
+      
+      // Prepare final crop data for submission
+      let finalCropData = {};
+      if (formData.get('type') === 'image') {
+        finalCropData = {
+          x: cropData.x,
+          y: cropData.y,
+          x2: cropData.x2,
+          y2: cropData.y2
+        };
+      } else if (formData.get('type') === 'video') {
+        finalCropData = {
+          start: cropData.start,
+          end: cropData.end
+        };
+        
+        if (isCroppingVideo) {
+          finalCropData.x = cropData.x;
+          finalCropData.y = cropData.y;
+          finalCropData.x2 = cropData.x2;
+          finalCropData.y2 = cropData.y2;
+        }
+      }
+      
+      previewCropData.textContent = JSON.stringify(finalCropData, null, 2);
+      
+      // Update final preview
+      finalPreview.innerHTML = '';
+      
+      if (formData.get('type') === 'image') {
+        const img = document.createElement('img');
+        img.src = currentFileUrl;
+        finalPreview.appendChild(img);
+        finalPreview.innerHTML += `
+          <div class="mt-2 text-center">
+            <small class="text-muted">Crop: ${cropData.width} x ${cropData.height}</small>
+          </div>
+        `;
+      } else {
+        const video = document.createElement('video');
+        video.src = currentFileUrl;
+        video.controls = true;
+        finalPreview.appendChild(video);
+        finalPreview.innerHTML += `
+          <div class="mt-2 text-center">
+            <small class="text-muted">Trim: ${cropData.start.toFixed(1)}s - ${cropData.end.toFixed(1)}s</small>
+            ${isCroppingVideo ? `<br><small class="text-muted">Crop: ${cropData.width} x ${cropData.height}</small>` : ''}
+          </div>
+        `;
+      }
+    }
+
+    // Format file size
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Form submission
+    document.getElementById('singleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const type = typeSelect.value;
+      
+      // Prepare crop data for submission
+      let finalCropData = {};
+      if (type === 'image') {
+        finalCropData = {
+          x: cropData.x,
+          y: cropData.y,
+          x2: cropData.x2,
+          y2: cropData.y2
+        };
+      } else if (type === 'video') {
+        finalCropData = {
+          start: cropData.start,
+          end: cropData.end
+        };
+        
+        if (isCroppingVideo) {
+          finalCropData.x = cropData.x;
+          finalCropData.y = cropData.y;
+          finalCropData.x2 = cropData.x2;
+          finalCropData.y2 = cropData.y2;
+        }
+      }
+
+      cropDataInput.value = JSON.stringify(finalCropData);
+
+      const formData = new FormData(e.target);
+      
+      try {
+        // In a real implementation, you would send this to your backend
+        // const res = await fetch('/add_single', { method: 'POST', body: formData });
+        // const data = await res.json();
+        
+        // For demo purposes, we'll simulate a successful response
+        const data = { status: 'ok' };
+
+        messageBox.classList.remove('d-none', 'alert-danger', 'alert-success');
+        
+        if (data.status === 'ok') {
+          messageBox.classList.add('alert-success');
+          messageBox.innerHTML = '<i class="fas fa-check-circle me-2"></i> Upload thành công!';
+        } else {
+          messageBox.classList.add('alert-danger');
+          messageBox.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Upload thất bại!';
+        }
+      } catch (error) {
+        messageBox.classList.remove('d-none');
+        messageBox.classList.add('alert-danger');
+        messageBox.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Có lỗi xảy ra khi upload!';
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set up step navigation
+      step1.classList.add('active');
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -28,10 +28,10 @@
 <body>
   <div class="container mt-5">
     <div class="card shadow p-4">
-      <h2 class="mb-4 text-center text-primary">Add New Sample</h2>
+      <h2 class="mb-4 text-center text-primary">Add New Samples</h2>
 
       <!-- ✅ form thực tế gửi dữ liệu -->
-      <form id="sampleForm" method="post" action="/add_sample" enctype="multipart/form-data">
+      <form id="sampleForm" method="post" action="/add_multiple_samples" enctype="multipart/form-data">
         <div class="mb-3">
           <label class="form-label"><strong>Type</strong></label>
           <select class="form-select" id="typeSelect" name="type" required>
@@ -97,7 +97,13 @@
           } else if (type === 'video') {
             const video = document.createElement('video');
             video.src = url;
-            video.controls = true;
+            video.preload = 'metadata';
+            video.autoplay = false;
+            video.muted = true;
+             // chỉ bật controls sau khi metadata load xong
+            video.addEventListener('loadedmetadata', () => {
+                video.controls = true;
+            });
             preview.appendChild(video);
           }
         });
