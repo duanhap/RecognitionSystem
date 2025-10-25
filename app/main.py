@@ -13,6 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 app = FastAPI()
 # Mount thư mục static
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/uploads", StaticFiles(directory="app/dataset"), name="uploads")
 # ✅ Thêm SessionMiddleware
 app.add_middleware(SessionMiddleware, secret_key="my_super_secret_key")
 # Đăng ký router

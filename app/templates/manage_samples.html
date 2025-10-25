@@ -6,6 +6,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <style>
+    body {
+      background-color: #f8f9fa;
+    }
     .thumb-img {
       width: 60px;
       height: 60px;
@@ -27,128 +30,160 @@
       transform: translateY(-5px);
       box-shadow: 0 10px 20px rgba(0,0,0,0.15);
     }
-    .choice-icon {
-      font-size: 3rem;
-      margin-bottom: 15px;
-    }
     .choice-content {
       padding: 25px 15px;
       text-align: center;
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
   <div class="container mt-5">
     <h2 class="text-center mb-4">Manage Samples</h2>
 
     <!-- Search + Add -->
     <div class="d-flex justify-content-between mb-3">
-      <div class="input-group w-50">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search by Sample ID">
-        <button class="btn btn-outline-primary" id="searchBtn">Search</button>
-      </div>
-      <!-- Nút Add Sample không còn href -->
+      <form class="input-group w-50" method="get" action="/manage_samples">
+        <input type="text" name="search" value="{{ search or '' }}" class="form-control" placeholder="Search by Sample ID">
+        <button class="btn btn-outline-primary" type="submit">Search</button>
+      </form>
+
       <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addChoiceModal">
         <i class="bi bi-plus-circle me-2"></i>Add Sample
       </button>
     </div>
 
     <!-- Samples Table -->
-    <table class="table table-striped table-bordered align-middle">
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Preview</th>
-          <th>File Name</th>
-          <th>Type</th>
-          <th>Label</th>
-          <th>Description</th>
-          <th>Created At</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Example Image Sample -->
-        <tr>
-          <td>1</td>
-          <td><img src="https://via.placeholder.com/60" class="thumb-img" alt="sample"></td>
-          <td>image1.jpg</td>
-          <td><span class="badge bg-success">Image</span></td>
-          <td><span class="badge bg-success">Real</span></td>
-          <td>faketype: faceswap</td>
-          <td>2025-10-06</td>
-          <td>
-            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewSampleModal">
-              <i class="bi bi-eye"></i> View
-            </button>
-            <button class="btn btn-danger btn-sm">
-              <i class="bi bi-trash"></i> Delete
-            </button>
-          </td>
-        </tr>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>ID</th>
+            <th>Preview</th>
+            <th>File Name</th>
+            <th>Type</th>
+            <th>Label</th>
+            <th>Description</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="text-center">
+          {% for s in samples %}
+          <tr>
+            <td>{{ s.id }}</td>
+            
+               <!-- Preview -->
+            <td>
+              {% if s.type == "image" %}
+                <img src="/uploads/{{ s.file_path | replace('\\', '/') }}" class="thumb-img" alt="sample">
+              {% else %}
+                <video width="200" height="200" controls>
+                  <source src="/uploads/{{ s.file_path | replace('\\', '/') }}" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              {% endif %}
+            </td>
 
-        <!-- Example Video Sample -->
-        <tr>
-          <td>2</td>
-          <td class="text-center"><span class="video-icon">🎥</span></td>
-          <td>video1.mp4</td>
-          <td><span class="badge bg-primary">Video</span></td>
-          <td><span class="badge bg-danger">Fake</span></td>
-          <td>faketype: deepfake</td>
-          <td>2025-10-06</td>
-          <td>
-            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewSampleModal">
-              <i class="bi bi-eye"></i> View
-            </button>
-            <button class="btn btn-danger btn-sm">
-              <i class="bi bi-trash"></i> Delete
-            </button>
-          </td>
-        </tr>
-        <!-- Add Sample Choice Modal -->
-        <div class="modal fade" id="addChoiceModal" tabindex="-1" aria-labelledby="addChoiceModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-md">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Add Sample</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <!-- File name -->
+            <td>{{ s.file_path.replace('\\', '/').split('/')[-1] }}</td>
+
+            <!-- Type -->
+            <td>
+              {% if s.type == "image" %}
+                <span class="badge bg-success">Image</span>
+              {% else %}
+                <span class="badge bg-primary">Video</span>
+              {% endif %}
+            </td>
+
+            <!-- Label -->
+            <td>
+              {% if s.label == "real" %}
+                <span class="badge bg-success">Real</span>
+              {% else %}
+                <span class="badge bg-danger">Fake</span>
+              {% endif %}
+            </td>
+
+            <td>{{ s.description or '' }}</td>
+            <td>{{ s.created_at.strftime("%Y-%m-%d") }}</td>
+            <td>
+              <a href="/view_sample/{{ s.id }}" class="btn btn-info btn-sm">
+                <i class="bi bi-eye"></i> View
+              </a>
+              <a href="/manage_samples/delete/{{ s.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this sample?')">
+                <i class="bi bi-trash"></i> Delete
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav>
+      <ul class="pagination justify-content-center">
+        {% if page > 1 %}
+        <li class="page-item">
+          <a class="page-link" href="/manage_samples?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+          <a class="page-link" href="/manage_samples?page={{ p }}{% if search %}&search={{ search }}{% endif %}">{{ p }}</a>
+        </li>
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <li class="page-item">
+          <a class="page-link" href="/manage_samples?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}">Next</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Add Sample Choice Modal -->
+  <div class="modal fade" id="addChoiceModal" tabindex="-1" aria-labelledby="addChoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Sample</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="card choice-card bg-light" onclick="window.location.href='/add_single_sample'">
+                <div class="choice-content">
+                  <div class="text-primary mb-2">
+                    <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>
+                  </div>
+                  <h5>Add Single</h5>
+                  <p class="text-muted small">Add one sample at a time</p>
+                </div>
               </div>
-              <div class="modal-body p-4">
-                <div class="row g-4">
-                  <div class="col-md-6">
-                    <div class="card choice-card bg-light" onclick="window.location.href='/add_single_sample'">
-                      <div class="choice-content text-center p-3">
-                        <div class="choice-icon text-primary mb-2">
-                          <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>
-                        </div>
-                        <h5>Add Single</h5>
-                        <p class="text-muted small">Add one sample at a time</p>
-                      </div>
-                    </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card choice-card bg-light" onclick="window.location.href='/add_multiple_samples'">
+                <div class="choice-content">
+                  <div class="text-success mb-2">
+                    <i class="bi bi-files" style="font-size: 2rem;"></i>
                   </div>
-                  <div class="col-md-6">
-                    <div class="card choice-card bg-light" onclick="window.location.href='/add_multiple_samples'">
-                      <div class="choice-content text-center p-3">
-                        <div class="choice-icon text-success mb-2">
-                          <i class="bi bi-files" style="font-size: 2rem;"></i>
-                        </div>
-                        <h5>Add Multiple</h5>
-                        <p class="text-muted small">Add multiple samples at once</p>
-                      </div>
-                    </div>
-                  </div>
+                  <h5>Add Multiple</h5>
+                  <p class="text-muted small">Add multiple samples at once</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </tbody>
-    </table>
+      </div>
+    </div>
   </div>
 
-  
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

@@ -9,8 +9,11 @@ class SampleService:
     def get_sample(self, sample_id: int):
         return self.sample_repo.get_sample_by_id(sample_id)
 
-    def search_samples(self, search: str = None):
-        return self.sample_repo.list_samples(search)
+    def search_samples(self, search: str = None, page: int = 1, per_page: int = 10):
+        skip = (page - 1) * per_page
+        samples = self.sample_repo.list_samples(search, skip=skip, limit=per_page)
+        total = self.sample_repo.count_samples(search)
+        return samples, total
 
     def create_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int, crop_info: dict = None) -> bool:
         try:

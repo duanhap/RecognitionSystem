@@ -12,18 +12,23 @@ class SampleRepository:
     def get_sample_by_id(self, sample_id: int):
         return self.db.query(TrainingSample).filter(TrainingSample.id == sample_id).first()
 
-    def list_samples(self, search: str = None):
+    def list_samples(self, search: str = None, skip: int = 0, limit: int = 10):
         query = self.db.query(TrainingSample)
         if search:
             query = query.filter(TrainingSample.id == search)  # tìm theo ID
-        return query.all()
+        return query.offset(skip).limit(limit).all()
+    def count_samples(self, search: str = None):
+        query = self.db.query(TrainingSample)
+        if search:
+            query = query.filter(TrainingSample.id == search)
+        return query.count()
 
     def add_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int,crop_info: dict = None) -> TrainingSample:
         # Nếu có crop_info, xử lý crop ở đây (giả sử crop_info chứa tọa độ crop)
         #Lưu file tạm
         temp_path = save_temp_file(file)
         # --- 1. Tạo đường dẫn thư mục dựa theo loại file và nhãn ---
-        base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "dataset")
+        base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dataset")
         # => từ repositories/ lên app/, rồi lên project/, rồi tới dataset/
         save_dir = os.path.join(base_dir, type, label)
 
@@ -33,6 +38,7 @@ class SampleRepository:
         # --- 3. Đặt tên file an toàn (thêm timestamp để tránh trùng) ---
         filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{file.filename}"
         file_path = os.path.join(save_dir, filename)
+        rel_path = os.path.relpath(file_path, base_dir)
 
         # --- 4. Ghi file ---
         if crop_info:
@@ -42,16 +48,14 @@ class SampleRepository:
                 crop_video(temp_path, file_path, crop_info)
         else:
             shutil.move(temp_path, file_path)
-            with open(file_path, "wb") as f:
-                while chunk := file.file.read(1024 * 1024):
-                    f.write(chunk)
+          
 
         # --- 5. Lưu thông tin vào DB ---
         sample = TrainingSample(
             type=type,
             label=label,
             description=description,
-            file_path=file_path,  # lưu đường dẫn tuyệt đối hoặc tương đối đều được
+            file_path=rel_path,  # lưu đường dẫn tuyệt đối hoặc tương đối đều được
             user_id=user_id
         )
         self.db.add(sample)

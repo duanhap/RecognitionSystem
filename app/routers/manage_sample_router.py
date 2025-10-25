@@ -1,3 +1,4 @@
+from math import ceil
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -16,10 +17,19 @@ class ManageSampleRouter:
         # Xóa sample
         self.router.add_api_route("/manage_samples/delete/{sample_id}", self.delete_sample, methods=["GET"])
 
-    async def manage_samples_page(self, request: Request, search: str = None, db: Session = Depends(get_db)):
+    async def manage_samples_page(self, request: Request, search: str = None, page:int=1, db: Session = Depends(get_db)):
         service = SampleService(db)
-        samples = service.search_samples(search)
-        return templates.TemplateResponse("manage_samples.html", {"request": request, "samples": samples, "search": search})
+        per_page = 10
+        samples, total = service.search_samples(search, page=page, per_page=per_page)
+        total_pages = ceil(total / per_page)
+
+        return templates.TemplateResponse("manage_samples.html", {
+            "request": request,
+            "samples": samples,
+            "search": search,
+            "page": page,
+            "total_pages": total_pages
+        })
 
     async def delete_sample(self, request: Request, sample_id: int, db: Session = Depends(get_db)):
         service = SampleService(db)
