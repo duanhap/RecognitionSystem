@@ -1,6 +1,6 @@
 import datetime
-from app.models.training_result import TrainingResult
-from app.models.training_sample import TrainingSample
+from app.model.training_result import TrainingResult
+from app.model.training_sample import TrainingSample
 from sqlalchemy.orm import Session
 
 class TrainingRepository:

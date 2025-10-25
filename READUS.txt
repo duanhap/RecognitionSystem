@@ -37,7 +37,7 @@ pip install -r requirements.txt
         --> [Auth Service] --> [User Repository] --> [DB MySQL] 
         --> nếu đúng user => Redirect /home 
         --> nếu sai => render lại login.html với error
-
+chạy file
  uvicorn app.main:app --reload
 
 
@@ -61,3 +61,9 @@ foreach ($file in Get-ChildItem *.mp4) {
     $outPath = Join-Path $newFolder "$name`_h264.mp4"
     ffmpeg -i $file.FullName -c:v libx264 -crf 23 -preset fast -movflags +faststart $outPath
 }
+
+chạy các file train
+python continue_train_image.py --model_path "models/image/20251025_152553_Xception/model_final.h5" --n_samples 100 --sampling_mode newest --train_ratio 0.8 --depth normal
+python train_image.py --dataset_root "dataset/image" --n_samples 500 --sampling_mode "random" --depth "normal" --out_root "models/image" --train_ratio 0.8
+python train_video.py --dataset_root "dataset/video" --n_samples 500 --sampling_mode random --depth normal --train_ratio 0.8
+python continue_train_video.py --model_path "models/video/20241215_143045_Xception_video/model_final.h5" --n_samples 500 --sampling_mode random --depth normal --train_ratio 0.8

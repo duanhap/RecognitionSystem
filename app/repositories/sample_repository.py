@@ -3,7 +3,7 @@ import os
 import shutil
 from fastapi import APIRouter, Depends, Request, UploadFile
 from sqlalchemy.orm import Session
-from app.models.training_sample import TrainingSample
+from app.model.training_sample import TrainingSample
 from app.services.media_crop_service import save_temp_file,crop_image,crop_video
 class SampleRepository:
     def __init__(self, db: Session):
