@@ -25,6 +25,11 @@ class Settings:
     ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "bmp"}
     ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv"}
 
+    # Thêm cấu hình cho video processing
+    VIDEO_FRAME_INTERVAL = 10
+    MAX_VIDEO_FRAMES = 30
+    VIDEO_POOLING_STRATEGY = "mean"  # mean, max, median, q75
+
 settings = Settings()
 
 # Create directories

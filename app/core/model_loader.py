@@ -50,11 +50,20 @@ class ModelLoader:
         return label, confidence, prediction
     
     def predict_video_frame(self, frame_array):
-        """Predict single video frame"""
+        """Predict single video frame - tương thích với video model"""
         if self.video_model is None:
             raise ValueError("Video model not loaded")
         
-        # Preprocess frame (same as image)
-        return self.predict_image(frame_array)
+        # Preprocess frame (giống trong training)
+        img = tf.image.resize(frame_array, self.img_size)
+        img = tf.expand_dims(img, axis=0)
+        img = img / 255.0
+        
+        # Predict
+        prediction = self.video_model.predict(img, verbose=0)
+        confidence = float(np.max(prediction))
+        label = "fake" if np.argmax(prediction) == 1 else "real"
+        
+        return label, confidence, prediction
 
 model_loader = ModelLoader()

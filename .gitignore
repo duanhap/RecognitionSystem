@@ -6,3 +6,4 @@ app/models
 app/static/heatmaps
 app/uploads
 app/modelsystem
+app/extracted_frames
