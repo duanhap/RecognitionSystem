@@ -12,7 +12,7 @@
     <h2 class="mb-4 text-center text-primary">Model Training Dashboard</h2>
 
     <!-- Training Options -->
-    <form method="post" enctype="multipart/form-data">
+    <form id="trainingForm" method="post" action="/train/start" enctype="multipart/form-data">
       <div class="row mb-3">
         <div class="col-md-6">
           <label class="form-label">Training Type</label>
@@ -39,8 +39,8 @@
           <label class="form-label">Training Depth</label>
           <select class="form-select" name="train_depth" required>
             <option value="normal">Normal (epochs=10, patience=3)</option>
-            <option value="deep">Deep (epochs=50, patience=5)</option>
-            <option value="super_deep">Super Deep (epochs=100, patience=10)</option>
+            <option value="deep">Deep (epochs=20, patience=5)</option>
+            <option value="superdeep">Super Deep (epochs=30, patience=7)</option>
           </select>
         </div>
 
@@ -53,7 +53,7 @@
         </div>
       </div>
 
-      <!-- Resume model list (ẩn/hiện theo lựa chọn) -->
+      <!-- Resume model list -->
       <div class="row mb-3 d-none" id="resumeSection">
         <div class="col-md-12">
           <label class="form-label">Select Existing Model to Resume</label>
@@ -69,10 +69,21 @@
       <!-- Action Buttons -->
       <div class="text-center mb-4">
         <button type="button" class="btn btn-outline-primary px-4">View History Results</button>
-        <button type="submit" class="btn btn-success px-4">Start Training</button>
-        <button type="button" class="btn btn-danger px-4">Stop</button>
+        <button type="submit" class="btn btn-success px-4" id="startButton">Start Training</button>
+        <button type="button" class="btn btn-danger px-4" onclick="stopTraining()">Stop</button>
       </div>
     </form>
+
+    <!-- Simple Loading Progress -->
+    <div id="trainingProgress" class="mt-4 d-none">
+        <div class="alert alert-info text-center">
+            <h5>Training in progress... <span id="trainingStatus" class="badge bg-warning">Running</span></h5>
+            <div class="progress my-3">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+            </div>
+            <p class="mb-0">Please wait while training completes. This may take several minutes.</p>
+        </div>
+    </div>
 
     <!-- Results Section -->
     <div class="mt-5">
@@ -88,36 +99,167 @@
         </thead>
         <tbody>
           <tr>
-            <td>--</td>
-            <td>--</td>
-            <td>--</td>
-            <td>--</td>
+            <td>
+              {% if result and result.saved_count is defined %}
+                {{ "%.4f"|format(result.video_metrics.accuracy) if result.video_metrics }}
+              {% else %}
+                --
+              {% endif %}
+            </td>
+            <td>
+              {% if result and result.saved_count is defined %}
+                {{ "%.4f"|format(result.video_metrics.precision) if result.video_metrics }}
+              {% else %}
+                --
+              {% endif %}
+            </td>
+            <td>
+              {% if result and result.saved_count is defined %}
+                {{ "%.4f"|format(result.video_metrics.recall) if result.video_metrics }}
+              {% else %}
+                --
+              {% endif %}
+            </td>
+            <td>
+              {% if result and result.saved_count is defined %}
+                {{ "%.4f"|format(result.video_metrics.f1) if result.video_metrics }}
+              {% else %}
+                --
+              {% endif %}
+            </td>
           </tr>
         </tbody>
       </table>
+      <!-- Message Alert -->
+      <div id="messageAlert" class="mt-3">
+          {% if message %}
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endif %}
+      </div>
+      
+      <!-- Saved Count -->
+      {% if result and result.saved_count is defined %}
+      <div class="alert alert-success">
+        <strong>Success!</strong> Saved {{ result.saved_count }} out of {{ result.total_samples }} training results.
+      </div>
+      {% endif %}
     </div>
 
     <!-- Save/Discard -->
     <div class="d-flex justify-content-center gap-3 mt-3">
-      <button class="btn btn-primary">Save Result</button>
-      <button class="btn btn-secondary">Discard</button>
+      <button class="btn btn-primary" onclick="saveTraining()">Save Result</button>
+      <button class="btn btn-secondary" onclick="cancelTraining()">Discard</button>
     </div>
 
   </div>
 </div>
 
 <script>
-  const trainMode = document.getElementById('trainMode');
-  const resumeSection = document.getElementById('resumeSection');
+// Form submission
+document.getElementById('trainingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    startTraining();
+});
 
-  trainMode.addEventListener('change', () => {
-    if (trainMode.value === 'resume') {
-      resumeSection.classList.remove('d-none');
-    } else {
-      resumeSection.classList.add('d-none');
+async function startTraining() {
+    const progressDiv = document.getElementById('trainingProgress');
+    const startButton = document.getElementById('startButton');
+    
+    // Hiển thị progress và disable start button
+    progressDiv.classList.remove('d-none');
+    startButton.disabled = true;
+    startButton.textContent = 'Starting...';
+    
+    // Submit form
+    const formData = new FormData(document.getElementById('trainingForm'));
+    
+    try {
+        const response = await fetch('/train/start', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const html = await response.text();
+            document.documentElement.innerHTML = html;
+        } else {
+            throw new Error('Failed to start training');
+        }
+    } catch (error) {
+        console.error('Error starting training:', error);
+        alert('Error starting training: ' + error.message);
+        startButton.disabled = false;
+        startButton.textContent = 'Start Training';
+        progressDiv.classList.add('d-none');
     }
-  });
-</script>
+}
 
+// Stop training
+async function stopTraining() {
+    if (!confirm('Are you sure you want to stop training?')) return;
+    
+    try {
+        const response = await fetch('/train/stop', { method: 'POST' });
+        if (response.ok) {
+            document.getElementById('trainingStatus').textContent = 'Stopped';
+            document.getElementById('trainingStatus').className = 'badge bg-danger';
+            alert('Training stopped successfully!');
+            setTimeout(() => location.reload(), 2000);
+        }
+    } catch (error) {
+        console.error('Error stopping training:', error);
+        alert('Error stopping training: ' + error.message);
+    }
+}
+
+async function saveTraining() {
+    try {
+        const response = await fetch('/train/save', { 
+            method: 'POST'
+            // KHÔNG thêm headers để server trả về HTML
+        });
+        
+        // Nhận HTML response và cập nhật trang
+        const html = await response.text();
+        document.documentElement.innerHTML = html;
+        
+        // Hiển thị thông báo từ message (nếu có)
+        // Message sẽ được hiển thị trong HTML template
+        
+    } catch (error) {
+        console.error('Error saving model:', error);
+        alert('Error saving model: ' + error.message);
+    }
+}
+// Cancel training
+async function cancelTraining() {
+    if (!confirm('Are you sure you want to cancel? Unsaved changes will be lost.')) return;
+    
+    try {
+        const response = await fetch('/train/cancel', { method: 'POST' });
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error canceling training:', error);
+    }
+}
+
+// Toggle resume section
+const trainMode = document.getElementById('trainMode');
+const resumeSection = document.getElementById('resumeSection');
+
+trainMode.addEventListener('change', () => {
+    if (trainMode.value === 'resume') {
+        resumeSection.classList.remove('d-none');
+    } else {
+        resumeSection.classList.add('d-none');
+    }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

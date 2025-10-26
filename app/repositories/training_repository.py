@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime  
 from app.model.training_result import TrainingResult
 from app.model.training_sample import TrainingSample
 from sqlalchemy.orm import Session
@@ -12,16 +12,15 @@ class TrainingRepository:
         query = self.db.query(TrainingSample).filter(TrainingSample.type == train_type)
         return query.limit(num_samples).all()
 
-    # Lưu kết quả training (chưa lưu model file)
-    def save_training_result(self, accuracy: float, precision: float, recall: float, f1: float, sample_id: int, user_id: int = None):
+    def save_training_result(self, accuracy: float, precision: float, recall: float, f1: float, sample_id: int, user_id: int = None, model_path: str = None):
         result = TrainingResult(
-            accuracy=accuracy,
-            precision=precision,
-            recall=recall,
+            acc=accuracy,
+            pre=precision,
+            rec=recall,
             f1=f1,
-            sample_id=sample_id,
-            user_id=user_id,
-            created_at=datetime.utcnow()
+            file_path=model_path,  # THÊM DÒNG NÀY
+            created_at=datetime.utcnow(),
+            training_sample_id=sample_id
         )
         self.db.add(result)
         self.db.commit()

@@ -44,8 +44,8 @@ import matplotlib.pyplot as plt
 # -------------------------
 DEPTH_PRESETS = {
     "normal": {"epochs": 10, "patience": 3, "lr": 1e-4, "batch_size": 32},
-    "deep": {"epochs": 30, "patience": 5, "lr": 5e-5, "batch_size": 24},
-    "superdeep": {"epochs": 50, "patience": 7, "lr": 1e-5, "batch_size": 16},
+    "deep": {"epochs": 20, "patience": 5, "lr": 5e-5, "batch_size": 24},
+    "superdeep": {"epochs": 30, "patience": 7, "lr": 1e-5, "batch_size": 16},
 }
 
 IMG_SIZE = (299, 299)  # Xception default input size

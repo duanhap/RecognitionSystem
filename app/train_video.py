@@ -371,12 +371,22 @@ def run_video_training_pipeline(
     create_dirs(model_folder)
     
     # Lưu samples list
-    df_samples = pd.DataFrame({
-        "filepath": df["filepath"],
-        "label": df["label"],
-        "video_source": df["filepath"].apply(lambda x: os.path.basename(x).split('_')[1])
-    })
-    df_samples.to_excel(os.path.join(model_folder, "samples_list.xlsx"), index=False)
+    # Lưu danh sách video đã được chọn cho lần train này
+    video_samples = gather_video_samples(dataset_root, n_samples, sampling_mode)
+    df_video_samples = pd.DataFrame(video_samples, columns=["video_path", "label"])
+    df_video_samples["video_name"] = df_video_samples["video_path"].apply(os.path.basename)
+
+    # # Thêm thông tin về số frames được trích xuất từ mỗi video
+    # def count_frames_from_video(video_path, label):
+    #     video_name = os.path.splitext(os.path.basename(video_path))[0]
+    #     pattern = os.path.join(frame_dir, f"{label}_{video_name}_frame*.jpg")
+    #     return len(glob(pattern))
+
+    # df_video_samples["frame_count"] = df_video_samples.apply(
+    #     lambda row: count_frames_from_video(row["video_path"], row["label"]), axis=1
+    # )
+
+    df_video_samples.to_excel(os.path.join(model_folder, "samples_list.xlsx"), index=False)
 
     # 3. Chia train/test/val
     filepaths = df["filepath"].tolist()
@@ -599,12 +609,12 @@ def run_video_training_pipeline(
         out_path = os.path.join(heatmap_dir, out_name)
         save_and_overlay_heatmap(fp, heatmap, out_path)
 
-    print(f"✅ Video training completed! Results saved to: {model_folder}")
+    print(f"Video training completed! Results saved to: {model_folder}")
     
     # In kết quả video-level
     if video_metrics and pooling_strategy in video_metrics:
         best_strategy = video_metrics[pooling_strategy]
-        print(f"\n🎯 VIDEO-LEVEL RESULTS (using {pooling_strategy} pooling):")
+        print(f"\n VIDEO-LEVEL RESULTS (using {pooling_strategy} pooling):")
         print(f"   Accuracy:  {best_strategy['accuracy']:.4f}")
         print(f"   Precision: {best_strategy['precision']:.4f}")
         print(f"   Recall:    {best_strategy['recall']:.4f}")
@@ -641,4 +651,6 @@ if __name__ == "__main__":
         force_extract=args.force_extract,
         pooling_strategy=args.pooling_strategy
     )
-    print(f"🎉 Training finished! Results in: {result_folder}")
+    print(f"Training finished! Results in: {result_folder}")
+
+

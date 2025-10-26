@@ -11,7 +11,17 @@ class SampleRepository:
 
     def get_sample_by_id(self, sample_id: int):
         return self.db.query(TrainingSample).filter(TrainingSample.id == sample_id).first()
-
+    
+    def get_sample_by_file_path(self, file_path: str):
+        """Tìm sample bằng file_path - dùng LIKE để tìm phần cuối"""
+        # Lấy tên file từ đường dẫn (phần cuối cùng)
+        filename = os.path.basename(file_path)
+        
+        # Tìm sample có file_path kết thúc bằng filename này
+        return self.db.query(TrainingSample).filter(
+            TrainingSample.file_path.like(f'%{filename}')
+        ).first()
+    
     def list_samples(self, search: str = None, skip: int = 0, limit: int = 10):
         query = self.db.query(TrainingSample)
         if search:

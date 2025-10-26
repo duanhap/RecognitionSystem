@@ -15,51 +15,84 @@ class TrainingRouter:
         self.router.add_api_route("/train/save", self.save_training, methods=["POST"])
         self.router.add_api_route("/train/cancel", self.cancel_training, methods=["POST"])
         self.router.add_api_route("/train/stop", self.stop_training, methods=["POST"])
-
+        self.router.add_api_route("/train/status", self.training_status, methods=["GET"])
 
     async def train_page(self, request: Request, db: Session = Depends(get_db)):
-        # Hiển thị giao diện train.html
         return templates.TemplateResponse("train.html", {"request": request})
+
+    async def training_status(self, request: Request, db: Session = Depends(get_db)):
+        """Kiểm tra trạng thái training hiện tại"""
+        service = TrainingService(db)
+        return {
+            "is_running": service._is_running,
+            "has_process": service._current_process is not None
+        }
+
+    async def save_training(self, request: Request, db: Session = Depends(get_db)):
+        service = TrainingService(db)
+        
+        # LẤY MODEL_PATH TỪ SESSION
+        model_path = request.session.get("last_model_path")
+        if model_path:
+            service._current_result_id = model_path
+        
+        result = service.save_model()
+        
+        # XÓA SESSION SAU KHI SAVE
+        if "last_model_path" in request.session:
+            del request.session["last_model_path"]
+        
+        return templates.TemplateResponse(
+            "train.html",
+            {
+                "request": request, 
+                "message": result.get("message", result.get("error", "Model saved successfully!")),
+                "result": result
+            }
+        )
 
     async def start_training(
         self, 
         request: Request,
         train_type: str = Form(...),
         num_samples: int = Form(...),
+        sample_mode: str = Form(None),
         train_depth: str = Form(...),
         train_mode: str = Form(...),
+        resume_model: str = Form(None),
         db: Session = Depends(get_db)
     ):
+        userId = request.session.get("user_id")
         service = TrainingService(db)
-        result = service.start_training(train_type, num_samples, train_depth, train_mode)
+        
+        result = await service.start_training(
+            train_type, num_samples, sample_mode, train_depth, 
+            train_mode, resume_model, userId
+        )
 
-        # render lại trang train.html, show kết quả
+        # LƯU MODEL_PATH VÀO SESSION
+        if result.get("model_path"):
+            request.session["last_model_path"] = result["model_path"]
+
         return templates.TemplateResponse(
             "train.html",
             {
                 "request": request,
                 "result": result,
-                "message": "Training completed!"
+                "message": result.get("message", "Training completed!"),
+                "model_path": result.get("model_path")
             }
-        )
-    async def save_training(self, request: Request, db: Session = Depends(get_db)):
-        service = TrainingService(db)
-        service.save_model()   # lưu file h5/pth + DB record
-        return templates.TemplateResponse(
-            "train.html",
-            {"request": request, "message": "Model đã được lưu thành công!"}
         )
 
     async def cancel_training(self, request: Request):
-        # Không lưu gì, quay về trang train
         return RedirectResponse(url="/train", status_code=303)
 
     async def stop_training(self, request: Request, db: Session = Depends(get_db)):
         service = TrainingService(db)
-        service.stop_training()  # dừng vòng lặp huấn luyện
+        result = service.stop_training()
         return templates.TemplateResponse(
             "train.html",
-            {"request": request, "message": "Training đã dừng lại!"}
+            {"request": request, "message": result.get("message", "Training stopped!")}
         )
 
 training_router = TrainingRouter().router

@@ -11,6 +11,7 @@ class TrainingResult(database.Base):
     rec = Column(Float)
     f1 = Column(Float)
     file_path = Column(String(255))  # đường dẫn file model đã lưu
+    created_at = Column(Date)
     training_sample_id = Column(Integer, ForeignKey("tblTrainingSample.id"))
 
-    sample = relationship("TrainingSample", back_populates="results")
+    sample = relationship("TrainingSample", backref="tblTrainingResult")

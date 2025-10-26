@@ -5,6 +5,9 @@
         │   ├── train_video.py            # file chạy train
         │   ├── train_image.py       
         │   ├── continue_train_image.py            # file chạy app
+        |   ├── models
+        |   |    ├── video 
+        |   |    └──image
         │   ├── continue_train_video.py           
         │   ├── core/              # config, kết nối DB
         │   │   ├── __init__.py
