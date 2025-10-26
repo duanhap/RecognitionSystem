@@ -63,7 +63,6 @@ class VideoService:
                 "status": "success",
                 "message": "Image processed successfully",
                 "data": {
-                    "filename": filename,
                     "heatmap_path": f"/static/heatmaps/images/{heatmap_filename}",
                     "label": label,
                     "confidence_score": round(confidence, 4),
