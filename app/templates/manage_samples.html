@@ -1,189 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Manage Samples</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .thumb-img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 6px;
-    }
-    .video-icon {
-      font-size: 40px;
-      color: #dc3545;
-    }
-    .choice-card {
-      cursor: pointer;
-      transition: all 0.3s ease;
-      height: 100%;
-      border: none;
-      border-radius: 10px;
-    }
-    .choice-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-    }
-    .choice-content {
-      padding: 25px 15px;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Samples - Admin System</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --dark-blue: #0a1f33;
+            --accent-blue: #2c5282;
+            --light-blue: #4a90e2;
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-header .logo {
+            height: 40px;
+            margin-bottom: 0.5rem;
+        }
+        
+        #sidebar.collapsed .sidebar-header h3,
+        #sidebar.collapsed .sidebar-header p {
+            display: none;
+        }
+        
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--light-blue);
+        }
+        
+        .menu-item i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        #sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        #sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+        
+        /* Main Content Styles */
+        #content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+        
+        #content.expanded {
+            margin-left: var(--sidebar-collapsed);
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .left-section {
+            display: flex;
+            align-items: center;  /* căn cùng hàng ngang */
+            gap: 20px;            /* khoảng cách giữa nút và chữ */
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        /* Manage Samples Styles */
+        .page-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .samples-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .search-input {
+            flex: 1;
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-add-sample {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-add-sample:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .table-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .table thead {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+        }
+        
+        .table th {
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #f1f3f4;
+            text-align: center;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .thumb-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .video-preview {
+            width: 80px;
+            height: 60px;
+            background: linear-gradient(135deg, #6c757d, #545b62);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .badge-image {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .badge-video {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .badge-real {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .badge-fake {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-view:hover, .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .pagination .page-item .page-link {
+            color: var(--primary-blue);
+            border: 1px solid #dee2e6;
+            padding: 0.5rem 1rem;
+            margin: 0 0.2rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            border-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .pagination .page-item .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #f8f9fa;
+        }
+        
+        /* Modal Styles */
+        .choice-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+        
+        .choice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            background: white;
+        }
+        
+        .choice-content {
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+        
+        .choice-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: var(--sidebar-collapsed);
+            }
+            
+            #sidebar.collapsed {
+                width: 0;
+            }
+            
+            #content {
+                margin-left: var(--sidebar-collapsed);
+            }
+            
+            #content.expanded {
+                margin-left: 0;
+            }
+            
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">Manage Samples</h2>
-
-    <!-- Search + Add -->
-    <div class="d-flex justify-content-between mb-3">
-      <form class="input-group w-50" method="get" action="/manage_samples">
-        <input type="text" name="search" value="{{ search or '' }}" class="form-control" placeholder="Search by Sample ID">
-        <button class="btn btn-outline-primary" type="submit">Search</button>
-      </form>
-
-      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addChoiceModal">
-        <i class="bi bi-plus-circle me-2"></i>Add Sample
-      </button>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/images/facial-recognition.png" alt="Logo" class="logo">
+            <h3>Admin System</h3>
+            <p class="mb-0">Management Portal</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="/" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/manage_samples" class="menu-item active">
+                <i class="fas fa-vial"></i>
+                <span>Manage Samples</span>
+            </a>
+            <a href="/manage_user" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-brain"></i>
+                <span>Training</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Test Results</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-comments"></i>
+                <span>Feedback</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-cogs"></i>
+                <span>System Settings</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
     </div>
-
-    <!-- Samples Table -->
-    <div class="table-responsive">
-      <table class="table table-striped table-bordered align-middle">
-        <thead class="table-dark text-center">
-          <tr>
-            <th>ID</th>
-            <th>Preview</th>
-            <th>File Name</th>
-            <th>Type</th>
-            <th>Label</th>
-            <th>Description</th>
-            <th>Created At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody class="text-center">
-          {% for s in samples %}
-          <tr>
-            <td>{{ s.id }}</td>
+    
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Top Navbar -->
+        <div class="top-navbar">
+            <div class="left-section">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h3 class="page-title"><i class="fas fa-vial me-2"></i>Manage Samples</h3>
+            </div>
             
-               <!-- Preview -->
-            <td>
-              {% if s.type == "image" %}
-                <img src="/uploads/{{ s.file_path | replace('\\', '/') }}" class="thumb-img" alt="sample">
-              {% else %}
-                <video width="200" height="200" controls>
-                  <source src="/uploads/{{ s.file_path | replace('\\', '/') }}" type="video/mp4">
-                  Your browser does not support the video tag.
-                </video>
-              {% endif %}
-            </td>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ username|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ username }}</strong>
+                    <div class="text-muted" style="font-size: 0.85rem;">Administrator</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <!-- <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-vial me-2"></i>Manage Samples</h1>
+            </div> -->
+            
+            <!-- Samples Card -->
+            <div class="samples-card">
+                <!-- Search and Add Section -->
+                <div class="search-section">
+                    <div class="d-flex justify-content-between align-items-end">
+                        <form class="search-form" method="get" action="/manage_samples">
+                            <div class="search-input">
+                                <label class="form-label fw-semibold">Search Samples</label>
+                                <input type="text" name="search" value="{{ search or '' }}" class="form-control" placeholder="Enter sample ID or filename...">
+                            </div>
+                            <div>
+                                <button class="btn btn-search" type="submit">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <button class="btn btn-add-sample" data-bs-toggle="modal" data-bs-target="#addChoiceModal">
+                            <i class="fas fa-plus-circle me-2"></i>Add Sample
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Samples Table -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Preview</th>
+                                    <th>File Name</th>
+                                    <th>Type</th>
+                                    <th>Label</th>
+                                    <th>Description</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in samples %}
+                                <tr>
+                                    <td><strong>#{{ s.id }}</strong></td>
+                                    
+                                    <!-- Preview -->
+                                    <td>
+                                        {% if s.type == "image" %}
+                                            <img src="/uploads/{{ s.file_path | replace('\\', '/') }}" class="thumb-img" alt="sample" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                            <div class="video-preview" style="display: none;">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="video-preview">
+                                                <i class="fas fa-video"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
 
-            <!-- File name -->
-            <td>{{ s.file_path.replace('\\', '/').split('/')[-1] }}</td>
+                                    <!-- File name -->
+                                    <td class="text-start">{{ s.file_path.replace('\\', '/').split('/')[-1] }}</td>
 
-            <!-- Type -->
-            <td>
-              {% if s.type == "image" %}
-                <span class="badge bg-success">Image</span>
-              {% else %}
-                <span class="badge bg-primary">Video</span>
-              {% endif %}
-            </td>
+                                    <!-- Type -->
+                                    <td>
+                                        {% if s.type == "image" %}
+                                            <span class="badge-image">
+                                                <i class="fas fa-image me-1"></i>Image
+                                            </span>
+                                        {% else %}
+                                            <span class="badge-video">
+                                                <i class="fas fa-video me-1"></i>Video
+                                            </span>
+                                        {% endif %}
+                                    </td>
 
-            <!-- Label -->
-            <td>
-              {% if s.label == "real" %}
-                <span class="badge bg-success">Real</span>
-              {% else %}
-                <span class="badge bg-danger">Fake</span>
-              {% endif %}
-            </td>
+                                    <!-- Label -->
+                                    <td>
+                                        {% if s.label == "real" %}
+                                            <span class="badge-real">
+                                                <i class="fas fa-check-circle me-1"></i>Real
+                                            </span>
+                                        {% else %}
+                                            <span class="badge-fake">
+                                                <i class="fas fa-times-circle me-1"></i>Fake
+                                            </span>
+                                        {% endif %}
+                                    </td>
 
-            <td>{{ s.description or '' }}</td>
-            <td>{{ s.created_at.strftime("%Y-%m-%d") }}</td>
-            <td>
-              <a href="/view_sample/{{ s.id }}" class="btn btn-info btn-sm">
-                <i class="bi bi-eye"></i> View
-              </a>
-              <a href="/manage_samples/delete/{{ s.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this sample?')">
-                <i class="bi bi-trash"></i> Delete
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                                    <td class="text-start">{{ s.description or 'No description' }}</td>
+                                    <td>{{ s.created_at.strftime("%Y-%m-%d") }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="/view_sample/{{ s.id }}" class="btn btn-view">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                                            <a href="/manage_samples/delete/{{ s.id }}" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this sample?')">
+                                                <i class="fas fa-trash me-1"></i>Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="pagination-container">
+                    <nav>
+                        <ul class="pagination">
+                            <!-- Previous Page -->
+                            {% if page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="/manage_samples?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}" aria-label="Previous">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                            </li>
+                            {% endif %}
+                            
+                            <!-- Page Numbers -->
+                            {% set start_page = [1, page - 2]|max %}
+                            {% set end_page = [total_pages, page + 2]|min %}
+                            
+                            {% if start_page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="/manage_samples?page=1{% if search %}&search={{ search }}{% endif %}">1</a>
+                            </li>
+                            {% if start_page > 2 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                            {% endif %}
+                            
+                            {% for p in range(start_page, end_page + 1) %}
+                            <li class="page-item {% if p == page %}active{% endif %}">
+                                <a class="page-link" href="/manage_samples?page={{ p }}{% if search %}&search={{ search }}{% endif %}">{{ p }}</a>
+                            </li>
+                            {% endfor %}
+                            
+                            {% if end_page < total_pages %}
+                            {% if end_page < total_pages - 1 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                            <li class="page-item">
+                                <a class="page-link" href="/manage_samples?page={{ total_pages }}{% if search %}&search={{ search }}{% endif %}">{{ total_pages }}</a>
+                            </li>
+                            {% endif %}
+                            
+                            <!-- Next Page -->
+                            {% if page < total_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="/manage_samples?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}" aria-label="Next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
-    <!-- Pagination -->
-    <nav>
-      <ul class="pagination justify-content-center">
-        {% if page > 1 %}
-        <li class="page-item">
-          <a class="page-link" href="/manage_samples?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}">Previous</a>
-        </li>
-        {% endif %}
-
-        {% for p in range(1, total_pages + 1) %}
-        <li class="page-item {% if p == page %}active{% endif %}">
-          <a class="page-link" href="/manage_samples?page={{ p }}{% if search %}&search={{ search }}{% endif %}">{{ p }}</a>
-        </li>
-        {% endfor %}
-
-        {% if page < total_pages %}
-        <li class="page-item">
-          <a class="page-link" href="/manage_samples?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}">Next</a>
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
-
-  <!-- Add Sample Choice Modal -->
-  <div class="modal fade" id="addChoiceModal" tabindex="-1" aria-labelledby="addChoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Add Sample</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body p-4">
-          <div class="row g-4">
-            <div class="col-md-6">
-              <div class="card choice-card bg-light" onclick="window.location.href='/add_single_sample'">
-                <div class="choice-content">
-                  <div class="text-primary mb-2">
-                    <i class="bi bi-file-earmark-plus" style="font-size: 2rem;"></i>
-                  </div>
-                  <h5>Add Single</h5>
-                  <p class="text-muted small">Add one sample at a time</p>
+    <!-- Add Sample Choice Modal -->
+    <div class="modal fade" id="addChoiceModal" tabindex="-1" aria-labelledby="addChoiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Add Sample</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card choice-card bg-light" onclick="window.location.href='/add_multiple_samples'">
-                <div class="choice-content">
-                  <div class="text-success mb-2">
-                    <i class="bi bi-files" style="font-size: 2rem;"></i>
-                  </div>
-                  <h5>Add Multiple</h5>
-                  <p class="text-muted small">Add multiple samples at once</p>
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card choice-card" onclick="window.location.href='/add_single_sample'">
+                                <div class="choice-content">
+                                    <div class="text-primary mb-2">
+                                        <i class="fa-solid fa-file-circle-plus fa-2x"></i>
+                                    </div>
+                                    <h5>Add Single</h5>
+                                    <p class="text-muted small">Add one sample at a time</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card choice-card" onclick="window.location.href='/add_multiple_samples'">
+                                <div class="choice-content">
+                                    <div class="text-success mb-2">
+                                        <i class="fa-solid fa-copy fa-2x"></i>
+                                    </div>
+                                    <h5>Add Multiple</h5>
+                                    <p class="text-muted small">Add multiple samples at once</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+            
+            // Change icon
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-indent');
+            } else {
+                icon.classList.remove('fa-indent');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Set active menu item
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Handle image loading errors
+        document.querySelectorAll('.thumb-img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+                const fallback = this.nextElementSibling;
+                if (fallback && fallback.classList.contains('video-preview')) {
+                    fallback.style.display = 'flex';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

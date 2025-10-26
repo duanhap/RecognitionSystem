@@ -28,7 +28,7 @@ class Settings:
     # Thêm cấu hình cho video processing
     VIDEO_FRAME_INTERVAL = 10
     MAX_VIDEO_FRAMES = 30
-    VIDEO_POOLING_STRATEGY = "mean"  # mean, max, median, q75
+    VIDEO_POOLING_STRATEGY = "confidence_weighted"  # mean, max, median, q75, confidence_weighted
 
 settings = Settings()
 

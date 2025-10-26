@@ -2,6 +2,10 @@
         │── app/
         │   ├── __init__.py
         │   ├── main.py            # file chạy app
+        │   ├── train_video.py            # file chạy train
+        │   ├── train_image.py       
+        │   ├── continue_train_image.py            # file chạy app
+        │   ├── continue_train_video.py           
         │   ├── core/              # config, kết nối DB
         │   │   ├── __init__.py
         │   │   └── database.py

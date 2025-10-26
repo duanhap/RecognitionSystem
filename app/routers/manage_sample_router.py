@@ -20,6 +20,7 @@ class ManageSampleRouter:
     async def manage_samples_page(self, request: Request, search: str = None, page:int=1, db: Session = Depends(get_db)):
         service = SampleService(db)
         per_page = 10
+        username = request.cookies.get("username")
         samples, total = service.search_samples(search, page=page, per_page=per_page)
         total_pages = ceil(total / per_page)
 
@@ -28,7 +29,8 @@ class ManageSampleRouter:
             "samples": samples,
             "search": search,
             "page": page,
-            "total_pages": total_pages
+            "total_pages": total_pages,
+            "username": username
         })
 
     async def delete_sample(self, request: Request, sample_id: int, db: Session = Depends(get_db)):

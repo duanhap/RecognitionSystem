@@ -16,6 +16,7 @@ class VideoService:
     def __init__(self):
         self.frame_interval = 10
         self.max_frames = 30  # Giới hạn số frame để xử lý nhanh
+        self.pooling_strategy = getattr(settings, 'VIDEO_POOLING_STRATEGY', 'mean')  # 👈 
     
     async def process_video(self, file):
         """Process uploaded video with multiple frames and video-level pooling"""
@@ -63,6 +64,7 @@ class VideoService:
                     "pooling_strategy": video_result["pooling_strategy"],
                     "frames_analyzed": video_result["frames_analyzed"],
                     "frame_predictions": video_result["frame_predictions"],
+                    "pooling_results": video_result["pooling_results"],  # 👈 THÊM DÒNG NÀY
                     "created_at": datetime.now().isoformat()
                 },
                 "timestamp": datetime.now().isoformat()
@@ -146,23 +148,39 @@ class VideoService:
         
         # Apply video-level pooling (giống training pipeline)
         fake_probabilities = [pred["fake_probability"] for pred in frame_predictions]
+        fake_probs_array = np.array(fake_probabilities)
         
+         # Tính toán pooling results với xử lý lỗi
         pooling_results = {
-            "mean": np.mean(fake_probabilities),
-            "max": np.max(fake_probabilities),
-            "median": np.median(fake_probabilities),
-            "q75": np.quantile(fake_probabilities, 0.75)
+            "mean": np.mean(fake_probs_array),
+            "max": np.max(fake_probs_array),
+            "median": np.median(fake_probs_array),
+            "q75": np.quantile(fake_probs_array, 0.75),
         }
         
-        # Use mean pooling as default (có thể configurable)
-        final_fake_prob = pooling_results["mean"]
+        # Thêm confidence_weighted với xử lý đặc biệt
+        try:
+            weights = np.abs(fake_probs_array - 0.5)
+            # Tránh chia cho 0 nếu tất cả weights = 0
+            if np.sum(weights) > 0:
+                pooling_results["confidence_weighted"] = np.average(fake_probs_array, weights=weights)
+            else:
+                pooling_results["confidence_weighted"] = pooling_results["mean"]
+        except Exception as e:
+            logger.warning(f"Error in confidence_weighted pooling: {e}, using mean instead")
+            pooling_results["confidence_weighted"] = pooling_results["mean"]
+        
+        
+        # 🎯 SỬA: Sử dụng pooling strategy từ config (hoặc default)
+        pooling_strategy = getattr(self, 'pooling_strategy', 'mean')
+        final_fake_prob = pooling_results[pooling_strategy]
         final_label = "fake" if final_fake_prob > 0.5 else "real"
         final_confidence = final_fake_prob if final_label == "fake" else 1 - final_fake_prob
         
         return {
             "final_label": final_label,
             "final_confidence": final_confidence,
-            "pooling_strategy": "mean",
+            "pooling_strategy": pooling_strategy,  # Trả về strategy thực tế đã dùng
             "frames_analyzed": len(frames_data),
             "frame_predictions": frame_predictions,
             "pooling_results": pooling_results

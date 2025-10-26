@@ -8,6 +8,7 @@ from app.routers.manage_user_router import manage_user_router
 from app.routers.login_router import login_router
 from app.routers.home_router import home_router
 from app.routers.view_detail_user_router import view_detail_user_router
+from app.routers.view_detail_sample_router import view_detail_sample_router
 from app.routers.manage_sample_router import manage_sample_router
 from app.routers.add_multiple_samples_router import add_multiple_samples_router
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,8 +40,10 @@ app.include_router(home_router)
 app.include_router(manage_user_router)
 app.include_router(manage_sample_router)
 app.include_router(add_multiple_samples_router)
+app.include_router(view_detail_sample_router)
 app.include_router(add_single_sample_router)
 app.include_router(view_detail_user_router)
+
 app.include_router(predict_router.router)
 
 
