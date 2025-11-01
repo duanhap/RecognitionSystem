@@ -18,6 +18,9 @@
         .table-actions {
             white-space: nowrap;
         }
+        .confidence-bar {
+            min-width: 100px;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -27,7 +30,7 @@
             <h1 class="text-primary">
                 <i class="fas fa-chart-line me-2"></i>Manage Test Results
             </h1>
-            <a href="home.html" class="btn btn-outline-secondary">
+            <a href="/home" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Back to Home
             </a>
         </div>
@@ -40,7 +43,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h5 class="card-title text-primary">Total Uploads & Tests</h5>
-                                <h2 class="text-dark">1,247</h2>
+                                <h2 class="text-dark">{{ total_uploads }}</h2>
                                 <p class="text-muted">Across all users</p>
                             </div>
                             <div class="align-self-center">
@@ -56,7 +59,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h5 class="card-title text-success">Average Confidence Score</h5>
-                                <h2 class="text-dark">86.4%</h2>
+                                <h2 class="text-dark">{{ average_confidence }}%</h2>
                                 <p class="text-muted">Overall accuracy</p>
                             </div>
                             <div class="align-self-center">
@@ -72,10 +75,10 @@
         <div class="card shadow">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Test Results History</h5>
-                <div class="d-flex">
-                    <input type="text" class="form-control me-2" placeholder="Search...">
-                    <button type="submit" class="btn btn-primary py-2">Search</button>
-                </div>
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by ID, label or username..." value="{{ search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -85,114 +88,63 @@
                                 <th>Result ID</th>
                                 <th>Confidence Score</th>
                                 <th>Label</th>
-                                <th>Sample ID</th>
-                                <th>User ID</th>
+                                <th>Media Type</th>
+                                <th>Username</th>
                                 <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#1001</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 92%">92%</div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-success">Real</span></td>
-                                <td>#M001</td>
-                                <td>#U015</td>
-                                <td>2023-10-15 14:30</td>
-                                <td class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i>View Detail
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#1002</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 65%">65%</div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-warning text-dark">Fake</span></td>
-                                <td>#M002</td>
-                                <td>#U023</td>
-                                <td>2023-10-15 13:45</td>
-                                <td class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i>View Detail
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#1003</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 45%">45%</div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-danger">Fake</span></td>
-                                <td>#M003</td>
-                                <td>#U007</td>
-                                <td>2023-10-15 12:20</td>
-                                <td class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i>View Detail
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#1004</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 95%">95%</div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-success">Real</span></td>
-                                <td>#M004</td>
-                                <td>#U042</td>
-                                <td>2023-10-15 11:15</td>
-                                <td class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i>View Detail
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#1005</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 88%">88%</div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-success">Real</span></td>
-                                <td>#M005</td>
-                                <td>#U031</td>
-                                <td>2023-10-15 10:05</td>
-                                <td class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i>View Detail
-                                    </button>
-                                </td>
-                            </tr>
+                            {% if results %}
+                                {% for result in results %}
+                                <tr>
+                                    <td>#{{ result.id }}</td>
+                                    <td>
+                                        <div class="confidence-bar">
+                                            <div class="progress" style="height: 20px;">
+                                                {% set confidence_percent = (result.confidence_score or 0) * 100 %}
+                                                {% if confidence_percent >= 70 %}
+                                                    {% set bar_class = "bg-success" %}
+                                                {% elif confidence_percent >= 40 %}
+                                                    {% set bar_class = "bg-warning" %}
+                                                {% else %}
+                                                    {% set bar_class = "bg-danger" %}
+                                                {% endif %}
+                                                <div class="progress-bar {{ bar_class }}" role="progressbar" 
+                                                     style="width: {{ confidence_percent }}%">
+                                                    {{ "%.1f"|format(confidence_percent) }}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if result.label and "real" in result.label.lower() %}
+                                            <span class="badge bg-success">Real</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Fake</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ result.media.type|default("Unknown") }}</span>
+                                    </td>
+                                    <td>@{{ result.media.user.username }}</td>
+                                    <td>{{ result.created_at.strftime('%Y-%m-%d %H:%M') if result.created_at else 'N/A' }}</td>
+                                    <td class="table-actions">
+                                        <a href="/view-detail-result/{{ result.id }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        No test results found.
+                                    </td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
-                </div>
-            </div>
-            <div class="card-footer bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>Showing 1 to 5 of 1,247 results</div>
-                    <nav>
-                        <ul class="pagination mb-0">
-                            <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                        </ul>
-                    </nav>
                 </div>
             </div>
         </div>

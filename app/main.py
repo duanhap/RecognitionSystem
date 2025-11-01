@@ -15,6 +15,8 @@ from app.routers.training_router import training_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.add_single_sample_router import add_single_sample_router
 from app.routers.view_feedback_router import feedback_router
+from app.routers.manage_test_result_router import manage_test_result_router
+from app.routers.view_detail_result_router import view_detail_result_router
 from .routers import  predict_router
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -28,15 +30,6 @@ app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 app.mount("/uploads", StaticFiles(directory="app/dataset"), name="uploads")
 # ✅ Thêm SessionMiddleware
 app.add_middleware(SessionMiddleware, secret_key="my_super_secret_key")
-# # CORS
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-# Đăng ký router
 app.include_router(login_router)
 app.include_router(home_router)
 app.include_router(manage_user_router)
@@ -46,6 +39,8 @@ app.include_router(view_detail_sample_router)
 app.include_router(add_single_sample_router)
 app.include_router(view_detail_user_router)
 app.include_router(feedback_router)
+app.include_router(manage_test_result_router)
+app.include_router(view_detail_result_router)
 
 app.include_router(predict_router.router)
 app.include_router(training_router)
