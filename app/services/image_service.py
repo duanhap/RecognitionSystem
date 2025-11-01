@@ -30,10 +30,26 @@ class ImageService:
                 content = await file.read()
                 buffer.write(content)
             
+            # # --- Xử lý ảnh ---
+            # image = Image.open(file_path)
+            # image_array = np.array(image)
+            
+            # label, confidence, prediction = model_loader.predict_image(image_array)
+            
             # --- Xử lý ảnh ---
             image = Image.open(file_path)
+
+            # ĐẢM BẢO ẢNH CÓ 3 KÊNH RGB
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+                logger.info(f"Converted image from {image.mode} to RGB")
+
+            # KIỂM TRA KÍCH THƯỚC (debug)
+            logger.info(f"Image size: {image.size}, mode: {image.mode}")
+
             image_array = np.array(image)
-            
+            logger.info(f"Image array shape: {image_array.shape}")
+
             label, confidence, prediction = model_loader.predict_image(image_array)
             
             # --- Sinh heatmap ---

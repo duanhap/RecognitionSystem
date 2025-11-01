@@ -57,18 +57,21 @@ class TrainingService:
             self._is_running = True
 
             # Đọc output
-            stdout, stderr = self._current_process.communicate()
+            #stdout, stderr = self._current_process.communicate()
 
-             # Tìm đường dẫn kết quả từ output
-            result_path = None
-            for line in stdout.split('\n'):
-                print("STDOUT:", line)
-                if "Results saved to:" in line:
-                    result_path = line.split("Results saved to:")[-1].strip()
-                elif "Training finished! Results in:" in line:
-                    result_path = line.split("Training finished! Results in:")[-1].strip()
-            if stderr:
-                line = stderr.strip()
+            # Đọc stdout real-time
+            for line in iter(self._current_process.stdout.readline, ''):
+                line = line.strip()
+                if line:
+                    print("STDOUT:", line)
+                    if "Results saved to:" in line:
+                        result_path = line.split("Results saved to:")[-1].strip()
+                    elif "Training finished! Results in:" in line:
+                        result_path = line.split("Training finished! Results in:")[-1].strip()
+
+            # Đọc stderr real-time
+            for line in iter(self._current_process.stderr.readline, ''):
+                line = line.strip()
                 if line:
                     print("STDERR:", line)
             
@@ -76,6 +79,42 @@ class TrainingService:
             return_code = self._current_process.wait()
             self._current_process = None
             self._is_running = False
+        
+            # CHUYỂN ĐƯỜNG DẪN THÀNH ABSOLUTE VÀ CHUẨN HÓA
+            if not os.path.isabs(result_path):
+                # Nếu là relative path, chuyển thành absolute từ thư mục app
+                app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+                result_path = os.path.join(app_dir, result_path)
+
+            # CHUẨN HÓA ĐƯỜNG DẪN (thay \ thành /)
+            result_path = os.path.normpath(result_path)
+
+            print(f"🔍 Checking model path: {result_path}")  # DEBUG
+            
+            # Kiểm tra đường dẫn tồn tại
+            if not os.path.exists(result_path):
+                return {"error": f"Model path not found: {result_path}. Current working dir: {os.getcwd()}"}
+
+            metrics_file = os.path.join(result_path, "metrics.json")
+
+            print(f"🔍 Checking metrics file: {metrics_file}")  # DEBUG
+            
+            if not os.path.exists(metrics_file):
+                return {"error": f"Metrics file not found: {metrics_file}"}
+            
+
+            # Đọc metrics.json
+            with open(metrics_file, 'r', encoding='utf-8') as f:
+                metrics = json.load(f)
+        
+            
+            # Lấy thông số từ metrics (video_level với pooling_strategy = "mean")
+            video_metrics = metrics.get("video_level", {}).get("mean", {})
+            
+            accuracy = video_metrics.get("accuracy", 0)
+            precision = video_metrics.get("precision", 0)
+            recall = video_metrics.get("recall", 0)
+            f1 = video_metrics.get("f1", 0)
 
             if return_code == 0:
                 message = "Training completed successfully!"
@@ -89,7 +128,11 @@ class TrainingService:
             return {
                 "message": message,
                 "completed": completed,
-                "model_path": result_path  # ← THÊM DÒNG NÀY
+                "model_path": result_path,  # ← THÊM DÒNG NÀY
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1
             }
 
         except Exception as e:

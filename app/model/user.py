@@ -17,6 +17,8 @@ class User(database.Base):
     role = Column(String(20), default="user")        # user / admin
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String(20), default="active")    # active / inactive
+    # Thêm relationship với Feedback
+    feedbacks = relationship("Feedback", back_populates="user")
 
     def to_dict(self):
             return {

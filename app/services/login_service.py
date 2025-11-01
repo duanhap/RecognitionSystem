@@ -9,6 +9,12 @@ class LoginService:
         user = self.user_repo.get_user_by_username(username)
         if not user:
             return None
-        if user.password != password and not user.is_active and user.role != 'admin':  # chưa mã hoá password
+        # Kiểm tra mật khẩu và trạng thái
+        if user.password != password:
+            return None
+        if user.status != "active":
+            return None
+        if user.role != "admin":
             return None
         return user
+

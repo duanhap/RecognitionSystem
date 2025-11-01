@@ -23,7 +23,7 @@ from PIL import Image
 # ⚙️ CONFIG với DEPTH PRESETS
 # ==========================
 DEPTH_PRESETS = {
-    "normal": {"epochs": 10, "patience": 1, "lr": 1e-4, "batch_size": 32},
+    "normal": {"epochs": 10, "patience": 3, "lr": 1e-4, "batch_size": 32},
     "deep": {"epochs": 20, "patience": 5, "lr": 5e-5, "batch_size": 24},
     "superdeep": {"epochs": 30, "patience": 7, "lr": 1e-5, "batch_size": 16},
 }
@@ -423,11 +423,20 @@ def run_video_training_pipeline(
     
     val_test_datagen = ImageDataGenerator(rescale=1.0/255)
 
+    # train_gen = train_datagen.flow_from_dataframe(
+    #     pd.DataFrame({"filepath": fp_tr, "label": y_tr}),
+    #     x_col="filepath", y_col="label",
+    #     target_size=IMG_SIZE, batch_size=cfg["batch_size"],
+    #     class_mode="categorical", shuffle=True
+    # )
+    # Trong cả 2 file, sửa flow_from_dataframe:
     train_gen = train_datagen.flow_from_dataframe(
         pd.DataFrame({"filepath": fp_tr, "label": y_tr}),
         x_col="filepath", y_col="label",
         target_size=IMG_SIZE, batch_size=cfg["batch_size"],
-        class_mode="categorical", shuffle=True
+        class_mode="categorical", 
+        classes=['real', 'fake'],  # THÊM DÒNG NÀY để fix thứ tự
+        shuffle=True
     )
     
     val_gen = val_test_datagen.flow_from_dataframe(

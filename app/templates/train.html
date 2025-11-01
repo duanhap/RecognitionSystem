@@ -100,33 +100,34 @@
         <tbody>
           <tr>
             <td>
-              {% if result and result.saved_count is defined %}
-                {{ "%.4f"|format(result.video_metrics.accuracy) if result.video_metrics }}
+              {% if result and result.accuracy is defined %}
+                {{ "%.4f"|format(result.accuracy) }}
               {% else %}
                 --
               {% endif %}
             </td>
             <td>
-              {% if result and result.saved_count is defined %}
-                {{ "%.4f"|format(result.video_metrics.precision) if result.video_metrics }}
+              {% if result and result.precision is defined %}
+                {{ "%.4f"|format(result.precision) }}
               {% else %}
                 --
               {% endif %}
             </td>
             <td>
-              {% if result and result.saved_count is defined %}
-                {{ "%.4f"|format(result.video_metrics.recall) if result.video_metrics }}
+              {% if result and result.recall is defined %}
+                {{ "%.4f"|format(result.recall) }}
               {% else %}
                 --
               {% endif %}
             </td>
             <td>
-              {% if result and result.saved_count is defined %}
-                {{ "%.4f"|format(result.video_metrics.f1) if result.video_metrics }}
+              {% if result and result.f1 is defined %}
+                {{ "%.4f"|format(result.f1) }}
               {% else %}
                 --
               {% endif %}
             </td>
+
           </tr>
         </tbody>
       </table>

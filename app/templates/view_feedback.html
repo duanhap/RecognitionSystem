@@ -17,6 +17,12 @@
     .feedback-item:hover {
       background-color: #f8f9fa;
     }
+    .star-filled {
+      color: #ffc107;
+    }
+    .star-empty {
+      color: #e4e5e9;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -24,9 +30,6 @@
 <div class="container mt-5">
   <div class="card shadow p-4">
     <h2 class="mb-4 text-center text-primary">Feedback & Rating Overview</h2>
-
-    <!-- Filter Section -->
-
     <!-- Statistics Section -->
     <div class="row mb-5">
       <!-- Left Column: Overall Rating -->
@@ -35,54 +38,30 @@
           <h5 class="text-center mb-3">Điểm xếp hạng & bài đánh giá</h5>
 
           <div class="text-center mb-4">
-            <h1 class="text-warning fw-bold mb-1">4.7</h1>
+            <h1 class="text-warning fw-bold mb-1">{{ average_rating }}</h1>
             <div class="rating-stars mb-2">
-              <span class="text-warning">★</span>
-              <span class="text-warning">★</span>
-              <span class="text-warning">★</span>
-              <span class="text-warning">★</span>
-              <span class="text-warning">★</span>
+              {% for i in range(5) %}
+                {% if i < average_rating %}
+                  <span class="star-filled">★</span>
+                {% else %}
+                  <span class="star-empty">☆</span>
+                {% endif %}
+              {% endfor %}
             </div>
-            <p class="text-muted">119,124 lượt đánh giá</p>
+            <p class="text-muted">{{ total_feedbacks }} lượt đánh giá</p>
           </div>
 
           <!-- Rating Distribution -->
           <div class="mt-3">
+            {% for stars in [5,4,3,2,1] %}
             <div class="d-flex align-items-center mb-2">
-              <span class="me-2" style="width: 25px;">5★</span>
+              <span class="me-2" style="width: 25px;">{{ stars }}★</span>
               <div class="progress flex-grow-1 mx-2">
-                <div class="progress-bar bg-warning" style="width: 75%"></div>
+                <div class="progress-bar bg-warning" style="width: {{ rating_distribution[stars] }}%"></div>
               </div>
-              <span style="width: 40px;">75%</span>
+              <span style="width: 40px;">{{ rating_distribution[stars] }}%</span>
             </div>
-            <div class="d-flex align-items-center mb-2">
-              <span class="me-2" style="width: 25px;">4★</span>
-              <div class="progress flex-grow-1 mx-2">
-                <div class="progress-bar bg-warning" style="width: 15%"></div>
-              </div>
-              <span style="width: 40px;">15%</span>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <span class="me-2" style="width: 25px;">3★</span>
-              <div class="progress flex-grow-1 mx-2">
-                <div class="progress-bar bg-warning" style="width: 6%"></div>
-              </div>
-              <span style="width: 40px;">6%</span>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <span class="me-2" style="width: 25px;">2★</span>
-              <div class="progress flex-grow-1 mx-2">
-                <div class="progress-bar bg-warning" style="width: 3%"></div>
-              </div>
-              <span style="width: 40px;">3%</span>
-            </div>
-            <div class="d-flex align-items-center">
-              <span class="me-2" style="width: 25px;">1★</span>
-              <div class="progress flex-grow-1 mx-2">
-                <div class="progress-bar bg-warning" style="width: 1%"></div>
-              </div>
-              <span style="width: 40px;">1%</span>
-            </div>
+            {% endfor %}
           </div>
         </div>
       </div>
@@ -93,95 +72,33 @@
           <h5 class="mb-3">Lịch sử đánh giá</h5>
           
           <div class="feedback-list" style="max-height: 400px; overflow-y: auto;">
-            <!-- Feedback Item 1 -->
-            <div class="feedback-item border-bottom pb-3 mb-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <h6 class="mb-1 fw-bold">Nguyễn Văn A</h6>
-                <small class="text-muted">15/12/2024</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <div class="rating-stars me-2">
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
+            {% if feedbacks %}
+              {% for feedback in feedbacks %}
+              <div class="feedback-item border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start">
+                  <h6 class="mb-1 fw-bold">{{ feedback.user.username }}</h6>
+                  <small class="text-muted">{{ feedback.created_at.strftime('%d/%m/%Y') if feedback.created_at else 'N/A' }}</small>
                 </div>
-              </div>
-              <p class="mb-0">Sản phẩm tuyệt vời, tôi rất hài lòng với chất lượng và dịch vụ!</p>
-            </div>
-
-            <!-- Feedback Item 2 -->
-            <div class="feedback-item border-bottom pb-3 mb-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <h6 class="mb-1 fw-bold">Trần Thị B</h6>
-                <small class="text-muted">14/12/2024</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <div class="rating-stars me-2">
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-secondary">☆</span>
+                <div class="d-flex align-items-center mb-2">
+                  <div class="rating-stars me-2">
+                    {% for i in range(5) %}
+                      {% if i < feedback.rating %}
+                        <span class="star-filled">★</span>
+                      {% else %}
+                        <span class="star-empty">☆</span>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  <span class="text-muted">({{ feedback.rating }})</span>
                 </div>
+                <p class="mb-0">{{ feedback.content or "Không có nội dung" }}</p>
               </div>
-              <p class="mb-0">Không chấp nhận được hệ thống quá xịn xò.</p>
-            </div>
-
-            <!-- Feedback Item 3 -->
-            <div class="feedback-item border-bottom pb-3 mb-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <h6 class="mb-1 fw-bold">Lê Văn C</h6>
-                <small class="text-muted">13/12/2024</small>
+              {% endfor %}
+            {% else %}
+              <div class="text-center text-muted py-4">
+                <p>Chưa có feedback nào.</p>
               </div>
-              <div class="d-flex align-items-center mb-2">
-                <div class="rating-stars me-2">
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-secondary">☆</span>
-                  <span class="text-secondary">☆</span>
-                </div>
-              </div>
-              <p class="mb-0">Web tạm được, nhưng load lâu quá.</p>
-            </div>
-
-            <!-- Feedback Item 4 -->
-            <div class="feedback-item border-bottom pb-3 mb-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <h6 class="mb-1 fw-bold">Phạm Thị D</h6>
-                <small class="text-muted">12/12/2024</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <div class="rating-stars me-2">
-                  <span class="text-warning">★</span>
-                  <span class="text-warning">★</span>
-                  <span class="text-secondary">☆</span>
-                  <span class="text-secondary">☆</span>
-                  <span class="text-secondary">☆</span>
-                </div>
-              </div>
-              <p class="mb-0">Không hài lòng lắm, hệ thống không đúng như mô tả.</p>
-            </div>
-
-            <!-- Feedback Item 5 -->
-            <div class="feedback-item pb-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <h6 class="mb-1 fw-bold">Hoàng Văn E</h6>
-                <small class="text-muted">10/12/2024</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <div class="rating-stars me-2">
-                  <span class="text-warning">★</span>
-                  <span class="text-secondary">☆</span>
-                  <span class="text-secondary">☆</span>
-                  <span class="text-secondary">☆</span>
-                  <span class="text-secondary">☆</span>
-                </div>
-              </div>
-              <p class="mb-0">Phân biệt ảnh khá kém và lâu cần cải thiện.</p>
-            </div>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -190,17 +107,21 @@
     <!-- Action Buttons -->
     <div class="d-flex justify-content-center gap-3 mt-4">
       <button class="btn btn-outline-secondary px-4" onclick="window.history.back()">Quay lại</button>
+      <a href="/home" class="btn btn-primary px-4">Trang chủ</a>
     </div>
 
   </div>
 </div>
 
 <script>
-  // Reset filter button
-  document.getElementById('resetBtn').addEventListener('click', function() {
-    const form = document.querySelector('form');
-    form.reset();
-  });
+  // Reset filter button (nếu có)
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      const form = document.querySelector('form');
+      form.reset();
+    });
+  }
 
   // Simple animation for progress bars
   document.addEventListener('DOMContentLoaded', function() {

@@ -7,3 +7,4 @@ app/static/heatmaps
 app/uploads
 app/modelsystem
 app/extracted_frames
+app/extracted_frames_continue

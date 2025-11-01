@@ -363,13 +363,30 @@ def continue_video_training(
     model_folder = os.path.join(out_root, f"{timestamp}_continue_{depth}_{base_model_name}")
     create_dirs(model_folder)
     
-    # Lưu samples list
-    df_samples = pd.DataFrame({
-        "filepath": df["filepath"],
-        "label": df["label"],
-        "video_source": df["filepath"].apply(lambda x: os.path.basename(x).split('_')[1])
-    })
-    df_samples.to_excel(os.path.join(model_folder, "samples_list.xlsx"), index=False)
+    # # Lưu samples list
+    # df_samples = pd.DataFrame({
+    #     "filepath": df["filepath"],
+    #     "label": df["label"],
+    #     "video_source": df["filepath"].apply(lambda x: os.path.basename(x).split('_')[1])
+    # })
+    # df_samples.to_excel(os.path.join(model_folder, "samples_list.xlsx"), index=False)
+    
+    # Lưu samples list - SỬA LẠI CHO ĐÚNG
+    video_samples = gather_video_samples(dataset_root, n_samples, sampling_mode)
+    df_video_samples = pd.DataFrame(video_samples, columns=["video_path", "label"])
+    df_video_samples["video_name"] = df_video_samples["video_path"].apply(os.path.basename)
+
+    # Thêm thông tin về số frames được trích xuất từ mỗi video (tuỳ chọn)
+    def count_frames_from_video(video_path, label):
+        video_name = os.path.splitext(os.path.basename(video_path))[0]
+        pattern = os.path.join(frame_dir, f"{label}_{video_name}_frame*.jpg")
+        return len(glob(pattern))
+
+    df_video_samples["frame_count"] = df_video_samples.apply(
+        lambda row: count_frames_from_video(row["video_path"], row["label"]), axis=1
+    )
+
+    df_video_samples.to_excel(os.path.join(model_folder, "samples_list.xlsx"), index=False)
 
     # 4. Chia train/test/val
     filepaths = df["filepath"].tolist()
@@ -406,11 +423,20 @@ def continue_video_training(
     
     val_test_datagen = ImageDataGenerator(rescale=1.0/255)
 
+    # train_gen = train_datagen.flow_from_dataframe(
+    #     pd.DataFrame({"filepath": fp_tr, "label": y_tr}),
+    #     x_col="filepath", y_col="label",
+    #     target_size=IMG_SIZE, batch_size=cfg["batch_size"],
+    #     class_mode="categorical", shuffle=True
+    # )
+    # Trong cả 2 file, sửa flow_from_dataframe:
     train_gen = train_datagen.flow_from_dataframe(
         pd.DataFrame({"filepath": fp_tr, "label": y_tr}),
         x_col="filepath", y_col="label",
         target_size=IMG_SIZE, batch_size=cfg["batch_size"],
-        class_mode="categorical", shuffle=True
+        class_mode="categorical", 
+        classes=['real', 'fake'],  # THÊM DÒNG NÀY để fix thứ tự
+        shuffle=True
     )
     
     val_gen = val_test_datagen.flow_from_dataframe(

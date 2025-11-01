@@ -22,17 +22,15 @@ class ViewDetailUserRouter:
 
     async def update_status(self, request: Request, user_id: int, status: str = Form(...), db: Session = Depends(get_db)):
         service = UserService(db)
-        success = service.change_status(user_id, status)  # bây giờ trả về boolean
+        success = service.change_status(user_id, status) 
         if success:
-            # Cập nhật thành công → redirect về chi tiết user
             return RedirectResponse(url=f"/view_user/{user_id}", status_code=303)
         else:
-            # Không tìm thấy user → hiển thị thông báo lỗi
             return templates.TemplateResponse(
                 "view_detail_user.html",
                 {
                     "request": request,
-                    "user": service.get_user(user_id),  # có thể là None
+                    "user": service.get_user(user_id), 
                     "error": "User not found, cannot update status!"
                 }
             )

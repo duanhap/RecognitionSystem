@@ -14,6 +14,7 @@ from app.routers.add_multiple_samples_router import add_multiple_samples_router
 from app.routers.training_router import training_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.add_single_sample_router import add_single_sample_router
+from app.routers.view_feedback_router import feedback_router
 from .routers import  predict_router
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -44,6 +45,7 @@ app.include_router(add_multiple_samples_router)
 app.include_router(view_detail_sample_router)
 app.include_router(add_single_sample_router)
 app.include_router(view_detail_user_router)
+app.include_router(feedback_router)
 
 app.include_router(predict_router.router)
 app.include_router(training_router)

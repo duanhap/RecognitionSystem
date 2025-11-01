@@ -6,7 +6,14 @@ from app.model.user import User
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
-
+    def update_status(self, user_id: int, status: str) -> bool:
+            user = self.get_user_by_id(user_id)
+            if not user:
+                return False
+            user.status = status
+            self.db.commit()
+            self.db.refresh(user)
+            return True
     def get_user_by_username(self, username: str):
         return self.db.query(User).filter(User.username == username).first()
     
@@ -20,14 +27,7 @@ class UserRepository:
         return query.all()
 
 
-    def update_status(self, user_id: int, status: str) -> bool:
-        user = self.get_user_by_id(user_id)
-        if not user:
-            return False
-        user.status = status
-        self.db.commit()
-        self.db.refresh(user)
-        return True
+    
 
 
     def delete_user(self, user_id: int) -> bool:
