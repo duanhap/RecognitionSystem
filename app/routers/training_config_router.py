@@ -63,7 +63,8 @@ class TrainingConfigRouter:
             print(f"! Could not load training config: {e}")
 
     async def config_page(self, request: Request):
-        return templates.TemplateResponse("settings.html", {"request": request})
+        username = request.cookies.get("username")  # lấy từ cookie
+        return templates.TemplateResponse("settings.html", {"request": request,"username":username})
     async def get_training_config(self):
         """Lấy toàn bộ config training"""
         return {

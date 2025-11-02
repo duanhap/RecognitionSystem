@@ -66,8 +66,7 @@
 
       <!-- Action Buttons -->
       <div class="text-center mb-4">
-        <button type="button" class="btn btn-outline-primary px-4">View History Results</button>
-        <button type="submit" class="btn btn-success px-4" id="startButton">Start Training</button>
+        <button type="button" class="btn btn-outline-primary px-4" onclick="viewHistory()">View History Results</button>        <button type="submit" class="btn btn-success px-4" id="startButton">Start Training</button>
         <button type="button" class="btn btn-danger px-4" onclick="stopTraining()">Stop</button>
       </div>
     </form>
@@ -155,7 +154,87 @@
 
   </div>
 </div>
-
+<!-- Training History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyModalLabel">
+          <i class="fas fa-history me-2"></i>Training History
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% if training_history and show_history %}
+        <div class="table-responsive">
+          <table class="table table-hover table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Training Date</th>
+                <th>Model Path</th>
+                <th>Samples</th>
+                <th>Avg Accuracy</th>
+                <th>Avg Precision</th>
+                <th>Avg Recall</th>
+                <th>Avg F1 Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for session in training_history %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                  <small>{{ session.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </td>
+                <td>
+                  <small class="text-muted font-monospace">
+                    {{ session.model_path|default('N/A') }}
+                  </small>
+                </td>
+                <td>
+                  <span class="badge bg-info">
+                    {{ session.sample_count }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-success">
+                    {{ "%.4f"|format(session.avg_accuracy) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-warning text-dark">
+                    {{ "%.4f"|format(session.avg_precision) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-primary">
+                    {{ "%.4f"|format(session.avg_recall) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-danger">
+                    {{ "%.4f"|format(session.avg_f1) }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+          <p class="text-muted">No training history found.</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 // Load available models khi trang được tải
 document.addEventListener('DOMContentLoaded', function() {
@@ -168,6 +247,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Khởi tạo trạng thái ban đầu
     toggleResumeSection();
 });
+// View training history
+async function viewHistory() {
+    try {
+        const response = await fetch('/train/history');
+        const html = await response.text();
+        
+        // Cập nhật nội dung trang với history modal
+        document.documentElement.innerHTML = html;
+        
+        // Hiển thị modal
+        const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
+        historyModal.show();
+        
+    } catch (error) {
+        console.error('Error loading history:', error);
+        alert('Error loading training history: ' + error.message);
+    }
+}
 // Load danh sách model có sẵn
 async function loadAvailableModels() {
     const trainType = document.getElementById('trainType').value;
@@ -265,19 +362,59 @@ async function startTraining() {
 
 // Stop training
 async function stopTraining() {
-    if (!confirm('Are you sure you want to stop training?')) return;
+    if (!confirm('Are you sure you want to stop training? Current progress will be saved.')) return;
     
     try {
-        const response = await fetch('/train/stop', { method: 'POST' });
+        const stopBtn = document.querySelector('button[onclick="stopTraining()"]');
+        const originalText = stopBtn.textContent;
+        stopBtn.textContent = 'Stopping...';
+        stopBtn.disabled = true;
+        
+        const response = await fetch('/train/stop', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
         if (response.ok) {
-            document.getElementById('trainingStatus').textContent = 'Stopped';
-            document.getElementById('trainingStatus').className = 'badge bg-danger';
-            alert('Training stopped successfully!');
-            setTimeout(() => location.reload(), 2000);
+            document.getElementById('trainingStatus').textContent = 'Stopping...';
+            document.getElementById('trainingStatus').className = 'badge bg-warning';
+            
+            // Kiểm tra trạng thái sau mỗi 2 giây
+            const checkInterval = setInterval(async () => {
+                const statusResponse = await fetch('/train/status');
+                const status = await statusResponse.json();
+                
+                if (!status.is_running && !status.has_process) {
+                    clearInterval(checkInterval);
+                    document.getElementById('trainingStatus').textContent = 'Stopped';
+                    document.getElementById('trainingStatus').className = 'badge bg-danger';
+                    
+                    // Hiển thị thông báo và reload sau 3 giây
+                    setTimeout(() => {
+                        alert('Training stopped successfully!');
+                        location.reload();
+                    }, 1000);
+                }
+            }, 2000);
+            
+            // Timeout sau 10 giây
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                alert('Training stop command sent. Page will reload.');
+                location.reload();
+            }, 10000);
+            
         }
     } catch (error) {
         console.error('Error stopping training:', error);
         alert('Error stopping training: ' + error.message);
+        
+        // Reset button state
+        const stopBtn = document.querySelector('button[onclick="stopTraining()"]');
+        stopBtn.textContent = 'Stop';
+        stopBtn.disabled = false;
     }
 }
 
@@ -300,17 +437,30 @@ async function saveTraining() {
         alert('Error saving model: ' + error.message);
     }
 }
-// Cancel training
+// Cancel training - Discard
 async function cancelTraining() {
-    if (!confirm('Are you sure you want to cancel? Unsaved changes will be lost.')) return;
+    if (!confirm('Are you sure you want to discard this training result?')) return;
     
     try {
-        const response = await fetch('/train/cancel', { method: 'POST' });
+        const response = await fetch('/train/cancel', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
         if (response.ok) {
-            location.reload();
+            const html = await response.text();
+            document.documentElement.innerHTML = html;
+            
+            // Hiển thị thông báo thành công
+            setTimeout(() => {
+                alert('Training result discarded successfully!');
+            }, 500);
         }
     } catch (error) {
-        console.error('Error canceling training:', error);
+        console.error('Error discarding training:', error);
+        alert('Error discarding training: ' + error.message);
     }
 }
 

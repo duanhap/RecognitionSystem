@@ -1,4 +1,5 @@
 import os
+import signal
 import cv2
 import json
 import random
@@ -22,6 +23,24 @@ from PIL import Image
 
 from core.config import settings
 
+# Global variable to track training interruption
+_training_interrupted = False
+
+def signal_handler(sig, frame):
+    """Handle interrupt signals to stop training gracefully"""
+    global _training_interrupted
+    print(f"\nReceived interrupt signal ({sig}), stopping training...")
+    _training_interrupted = True
+    # Set TensorFlow/Keras to stop training
+    import tensorflow as tf
+    # This will cause the next epoch to stop
+    # We'll check this flag during training
+
+# Register signal handlers
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
+
+# Lấy config
 def get_video_training_config():
     """Lấy config training cho video từ settings"""
     return settings.VIDEO_TRAINING_CONFIG
@@ -474,21 +493,62 @@ def run_video_training_pipeline(
 
     # 5. Build & Train model
     model = build_model(cfg["lr"])
+
+    # Custom callback to check for interruption
+    class InterruptCallback(tf.keras.callbacks.Callback):
+        def on_epoch_end(self, epoch, logs=None):
+            global _training_interrupted
+            if _training_interrupted:
+                print(f"Training interrupted at epoch {epoch+1}")
+                self.model.stop_training = True
     
     callbacks = [
         EarlyStopping(monitor="val_loss" if val_gen else "loss", patience=cfg["patience"], restore_best_weights=True),
         ModelCheckpoint(os.path.join(model_folder, "model_checkpoint.h5"), save_best_only=True),
-        CSVLogger(os.path.join(model_folder, "training_log.csv"))
+        CSVLogger(os.path.join(model_folder, "training_log.csv")),
+        InterruptCallback()  # THÊM CALLBACK NÀY
     ]
 
     print("Starting training...")
-    history = model.fit(
-        train_gen,
-        epochs=cfg["epochs"],
-        validation_data=val_gen,
-        callbacks=callbacks,
-        verbose=1
-    )
+    try:
+        history = model.fit(
+            train_gen,
+            epochs=cfg["epochs"],
+            validation_data=val_gen,
+            callbacks=callbacks,
+            verbose=1
+        )
+        
+        # Kiểm tra nếu training bị interrupt
+        if _training_interrupted:
+            print("Training was interrupted by user")
+            # Vẫn lưu model checkpoint hiện tại
+            model.save(os.path.join(model_folder, "model_interrupted.h5"))
+            
+            # Tạo metrics cho training bị interrupt
+            metrics = {
+                "status": "interrupted",
+                "message": "Training was interrupted by user",
+                "epochs_completed": len(history.history.get('loss', [])),
+                "final_loss": history.history.get('loss', [])[-1] if history.history.get('loss') else None,
+                "final_accuracy": history.history.get('accuracy', [])[-1] if history.history.get('accuracy') else None
+            }
+            
+            with open(os.path.join(model_folder, "metrics.json"), "w") as f:
+                json.dump(metrics, f, indent=2)
+            
+            print(f"Interrupted training state saved to: {model_folder}")
+            return model_folder
+
+    except KeyboardInterrupt:
+        print("Training interrupted by KeyboardInterrupt")
+        # Lưu model hiện tại
+        model.save(os.path.join(model_folder, "model_interrupted.h5"))
+        # Tạo metrics cho interrupt
+        metrics = {"status": "interrupted", "message": "Training interrupted by KeyboardInterrupt"}
+        with open(os.path.join(model_folder, "metrics.json"), "w") as f:
+            json.dump(metrics, f, indent=2)
+        return model_folder
 
     # 6. Save final model
     model.save(os.path.join(model_folder, "model_final.h5"))

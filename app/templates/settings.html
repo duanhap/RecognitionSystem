@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Settings</title>
+    <title>System Settings - Admin System</title>
+    <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -12,35 +14,176 @@
             --dark-blue: #0a1f33;
             --accent-blue: #2c5282;
             --light-blue: #4a90e2;
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f8f9fa;
             color: #333;
+            overflow-x: hidden;
         }
         
-        .settings-container {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* Sidebar Styles */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-header .logo {
+            height: 40px;
+            margin-bottom: 0.5rem;
+        }
+        
+        #sidebar.collapsed .sidebar-header h3,
+        #sidebar.collapsed .sidebar-header p {
+            display: none;
+        }
+        
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--light-blue);
+        }
+        
+        .menu-item i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        .left-section {
+            display: flex;
+            align-items: center;  /* căn cùng hàng ngang */
+            gap: 20px;            /* khoảng cách giữa nút và chữ */
+        }
+        
+        #sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        #sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+        
+        /* Main Content Styles */
+        #content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+        
+        #content.expanded {
+            margin-left: var(--sidebar-collapsed);
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .main-content {
             padding: 2rem;
+        }
+        
+        /* Settings Styles */
+        .page-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin: 0;
         }
         
         .settings-header {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             border-left: 5px solid var(--primary-blue);
         }
         
         .settings-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
@@ -58,15 +201,21 @@
         
         .preset-config {
             background: #f8f9fa;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1rem;
             border-left: 4px solid var(--accent-blue);
+            transition: all 0.3s;
+        }
+        
+        .preset-config:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .preset-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
         }
@@ -80,6 +229,7 @@
         .form-label {
             font-weight: 600;
             color: var(--dark-blue);
+            margin-bottom: 0.5rem;
         }
         
         .btn-save {
@@ -110,39 +260,97 @@
             padding: 1.5rem 0;
         }
         
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 2rem;
+        }
+        
         .nav-tabs .nav-link {
             color: var(--dark-blue);
             font-weight: 600;
             border: none;
             padding: 1rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            margin-right: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            background-color: #f8f9fa;
+            border-color: transparent;
         }
         
         .nav-tabs .nav-link.active {
-            background: none;
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
             border: none;
             border-bottom: 3px solid var(--light-blue);
-            color: var(--light-blue);
         }
+        
         .model-select-group .form-control[readonly] {
             background-color: #f8f9fa;
             cursor: not-allowed;
+            border: 1px solid #e9ecef;
         }
 
         .btn-outline-primary {
             border-color: var(--light-blue);
             color: var(--light-blue);
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
         .btn-outline-primary:hover {
             background-color: var(--light-blue);
             color: white;
+            transform: translateY(-1px);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--light-blue);
+            box-shadow: 0 0 0 0.2rem rgba(42, 128, 255, 0.25);
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: var(--sidebar-collapsed);
+            }
+            
+            #sidebar.collapsed {
+                width: 0;
+            }
+            
+            #content {
+                margin-left: var(--sidebar-collapsed);
+            }
+            
+            #content.expanded {
+                margin-left: 0;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .preset-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Include Sidebar and Header from home.html -->
+    <!-- Sidebar -->
     <div id="sidebar">
-        <!-- Same sidebar as home.html -->
         <div class="sidebar-header">
             <img src="/static/images/facial-recognition.png" alt="Logo" class="logo">
             <h3>Admin System</h3>
@@ -150,7 +358,7 @@
         </div>
         
         <div class="sidebar-menu">
-            <a href="/home" class="menu-item">
+            <a href="/" class="menu-item">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
@@ -185,11 +393,16 @@
         </div>
     </div>
     
+    <!-- Main Content -->
     <div id="content">
+        <!-- Top Navbar -->
         <div class="top-navbar">
-            <button class="toggle-sidebar" id="toggleSidebar">
-                <i class="fas fa-bars"></i>
-            </button>
+             <div class="left-section">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h3 class="page-title"><i class="fas fa-cogs me-2"></i>System Settings</h3>
+                </div>
             
             <div class="user-info">
                 <div class="user-avatar">
@@ -201,12 +414,13 @@
                 </div>
             </div>
         </div>
-
-        <div class="settings-container">
-            <div class="settings-header">
-                <h1><i class="fas fa-cogs me-3"></i>System Settings</h1>
-                <p class="mb-0">Configure model paths and training parameters</p>
-            </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <!-- <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-cogs me-2"></i>System Settings</h1>
+            </div> -->
 
             <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -251,7 +465,7 @@
                                             <button class="btn btn-secondary btn-sm" id="cancelImageModel">Cancel</button>
                                         </div>
                                     </div>
-                                    <div class="form-text">Current model for image processing</div>
+                                    <div class="form-text text-muted">Current model for image processing and analysis</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -272,12 +486,12 @@
                                             <button class="btn btn-secondary btn-sm" id="cancelVideoModel">Cancel</button>
                                         </div>
                                     </div>
-                                    <div class="form-text">Current model for video processing</div>
+                                    <div class="form-text text-muted">Current model for video processing and analysis</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row mt-3">
+                        <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="model-select-group">
                                     <label class="form-label">Video Pooling Strategy</label>
@@ -288,19 +502,19 @@
                                         <option value="q75">Q75 (75th Percentile)</option>
                                         <option value="confidence_weighted">Confidence Weighted</option>
                                     </select>
-                                    <div class="form-text">Strategy for pooling video frame predictions</div>
+                                    <div class="form-text text-muted">Strategy for pooling video frame predictions</div>
                                 </div>
                             </div>
+                           
                         </div>
                     </div>
                 </div>
-                
 
                 <!-- Image Training Tab -->
                 <div class="tab-pane fade" id="image-training" role="tabpanel">
                     <div class="settings-card">
                         <h3 class="section-title"><i class="fas fa-image me-2"></i>Image Training Configuration</h3>
-                        <p class="text-muted mb-4">Configure depth presets for image model training</p>
+                        <p class="text-muted mb-4">Configure depth presets for image model training and optimization</p>
                         
                         <div id="imagePresetsContainer">
                             <!-- Normal Preset -->
@@ -321,7 +535,7 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Learning Rate</label>
                                         <input type="text" class="form-control" value="1e-4" readonly>
-                                        <div class="form-text">Fixed value</div>
+                                        <div class="form-text text-muted">Fixed value</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Batch Size</label>
@@ -334,6 +548,7 @@
                             <div class="preset-config">
                                 <div class="preset-header">
                                     <span class="preset-name">Deep Preset</span>
+                                    <span class="config-badge">Recommended</span>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3">
@@ -347,7 +562,7 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Learning Rate</label>
                                         <input type="text" class="form-control" value="5e-5" readonly>
-                                        <div class="form-text">Fixed value</div>
+                                        <div class="form-text text-muted">Fixed value</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Batch Size</label>
@@ -360,6 +575,7 @@
                             <div class="preset-config">
                                 <div class="preset-header">
                                     <span class="preset-name">Super Deep Preset</span>
+                                    <span class="config-badge">High Accuracy</span>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3">
@@ -373,7 +589,7 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Learning Rate</label>
                                         <input type="text" class="form-control" value="1e-5" readonly>
-                                        <div class="form-text">Fixed value</div>
+                                        <div class="form-text text-muted">Fixed value</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Batch Size</label>
@@ -401,7 +617,9 @@
                                     <option value="q75">Q75 (75th Percentile)</option>
                                     <option value="confidence_weighted">Confidence Weighted</option>
                                 </select>
+                                <div class="form-text text-muted">Default strategy for video frame aggregation</div>
                             </div>
+                        
                         </div>
                         
                         <div id="videoPresetsContainer">
@@ -423,7 +641,7 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Learning Rate</label>
                                         <input type="text" class="form-control" value="1e-4" readonly>
-                                        <div class="form-text">Fixed value</div>
+                                        <div class="form-text text-muted">Fixed value</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Batch Size</label>
@@ -436,6 +654,7 @@
                             <div class="preset-config">
                                 <div class="preset-header">
                                     <span class="preset-name">Deep Preset</span>
+                                    <span class="config-badge">Recommended</span>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3">
@@ -449,7 +668,7 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Learning Rate</label>
                                         <input type="text" class="form-control" value="5e-5" readonly>
-                                        <div class="form-text">Fixed value</div>
+                                        <div class="form-text text-muted">Fixed value</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Batch Size</label>
@@ -462,6 +681,7 @@
                             <div class="preset-config">
                                 <div class="preset-header">
                                     <span class="preset-name">Super Deep Preset</span>
+                                    <span class="config-badge">High Accuracy</span>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3">
@@ -475,7 +695,7 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Learning Rate</label>
                                         <input type="text" class="form-control" value="1e-5" readonly>
-                                        <div class="form-text">Fixed value</div>
+                                        <div class="form-text text-muted">Fixed value</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Batch Size</label>
@@ -496,378 +716,412 @@
         </div>
     </div>
 
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-    // Helper function to extract model name from full path
-    function extractModelName(fullPath) {
-        if (!fullPath) return 'Not set';
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+            
+            // Change icon
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-indent');
+            } else {
+                icon.classList.remove('fa-indent');
+                icon.classList.add('fa-bars');
+            }
+        });
         
-        // Handle Windows paths
-        const normalizedPath = fullPath.replace(/\\/g, '/');
+        // Set active menu item
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+
+        // Your existing JavaScript code for settings functionality goes here
+        // (The JavaScript code from your original settings.html file)
         
-        // Extract folder name from path like: app/models/image/20251025_152553_Xception/model_final.h5
-        const match = normalizedPath.match(/\/([^\/]+)\/model_final\.h5$/);
-        return match ? match[1] : normalizedPath;
-    }
-
-    // Current model paths
-    let currentImageModel = '';
-    let currentVideoModel = '';
-
-    // Main load settings function
-    async function loadSettings() {
-        try {
-            console.log('Loading settings...');
+        // Helper function to extract model name from full path
+        function extractModelName(fullPath) {
+            if (!fullPath) return 'Not set';
             
-            const response = await fetch('/api/training-config');
-            const config = await response.json();
-            console.log('Config loaded:', config);
+            // Handle Windows paths
+            const normalizedPath = fullPath.replace(/\\/g, '/');
             
-            // Load current model paths
-            await loadCurrentModelPaths(config);
-            
-            // Load available models
-            await loadAvailableModels();
-            
-            // Setup event handlers
-            setupModelHandlers();
-            
-            // Load training configs
-            loadImageTrainingConfig(config.image);
-            loadVideoTrainingConfig(config.video);
-            
-            // Set pooling strategy
-            const poolingStrategy = config.video_pooling_strategy || config.video?.default_pooling_strategy || 'mean';
-            document.getElementById('videoPoolingStrategy').value = poolingStrategy;
-            
-            console.log('Settings loaded successfully');
-            
-        } catch (error) {
-            console.error('Error loading settings:', error);
-            alert('Error loading settings: ' + error.message);
+            // Extract folder name from path like: app/models/image/20251025_152553_Xception/model_final.h5
+            const match = normalizedPath.match(/\/([^\/]+)\/model_final\.h5$/);
+            return match ? match[1] : normalizedPath;
         }
-    }
 
-    // Load current model paths from config
-    async function loadCurrentModelPaths(config = null) {
-        try {
-            let currentConfig = config;
-            
-            if (!currentConfig) {
+        // Current model paths
+        let currentImageModel = '';
+        let currentVideoModel = '';
+
+        // Main load settings function
+        async function loadSettings() {
+            try {
+                console.log('Loading settings...');
+                
                 const response = await fetch('/api/training-config');
-                currentConfig = await response.json();
+                const config = await response.json();
+                console.log('Config loaded:', config);
+                
+                // Load current model paths
+                await loadCurrentModelPaths(config);
+                
+                // Load available models
+                await loadAvailableModels();
+                
+                // Setup event handlers
+                setupModelHandlers();
+                
+                // Load training configs
+                loadImageTrainingConfig(config.image);
+                loadVideoTrainingConfig(config.video);
+                
+                // Set pooling strategy
+                const poolingStrategy = config.video_pooling_strategy || config.video?.default_pooling_strategy || 'mean';
+                document.getElementById('videoPoolingStrategy').value = poolingStrategy;
+                
+                console.log('Settings loaded successfully');
+                
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                alert('Error loading settings: ' + error.message);
             }
-            
-            console.log('Config for model paths:', currentConfig);
-            
-            // Get paths from API response
-            const imagePath = currentConfig.image_model_path || '';
-            const videoPath = currentConfig.video_model_path || '';
-            
-            currentImageModel = imagePath;
-            currentVideoModel = videoPath;
-            
-            // Display friendly names
-            const imageName = extractModelName(imagePath);
-            const videoName = extractModelName(videoPath);
-            
-            document.getElementById('currentImageModel').value = imageName;
-            document.getElementById('currentVideoModel').value = videoName;
-            
-            console.log('Current models loaded - Image:', imageName, 'Video:', videoName);
-            
-        } catch (error) {
-            console.error('Error loading current model paths:', error);
-            document.getElementById('currentImageModel').value = 'Error loading';
-            document.getElementById('currentVideoModel').value = 'Error loading';
         }
-    }
 
-    // Load available models into dropdowns
-    async function loadAvailableModels() {
-        try {
-            const response = await fetch('/api/available-models');
-            const models = await response.json();
-            console.log('Available models:', models);
-            
-            const imageSelect = document.getElementById('imageModelSelect');
-            const videoSelect = document.getElementById('videoModelSelect');
-            
-            // Clear loading messages
-            imageSelect.innerHTML = '<option value="">Select image model...</option>';
-            videoSelect.innerHTML = '<option value="">Select video model...</option>';
-            
-            // Populate image models and set selected value
-            if (models.image && models.image.length > 0) {
-                models.image.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.path;
-                    option.textContent = model.name || extractModelName(model.path);
-                    
-                    // Set selected if this is the current model
-                    if (model.path === currentImageModel) {
+        // Load current model paths from config
+        async function loadCurrentModelPaths(config = null) {
+            try {
+                let currentConfig = config;
+                
+                if (!currentConfig) {
+                    const response = await fetch('/api/training-config');
+                    currentConfig = await response.json();
+                }
+                
+                console.log('Config for model paths:', currentConfig);
+                
+                // Get paths from API response
+                const imagePath = currentConfig.image_model_path || '';
+                const videoPath = currentConfig.video_model_path || '';
+                
+                currentImageModel = imagePath;
+                currentVideoModel = videoPath;
+                
+                // Display friendly names
+                const imageName = extractModelName(imagePath);
+                const videoName = extractModelName(videoPath);
+                
+                document.getElementById('currentImageModel').value = imageName;
+                document.getElementById('currentVideoModel').value = videoName;
+                
+                console.log('Current models loaded - Image:', imageName, 'Video:', videoName);
+                
+            } catch (error) {
+                console.error('Error loading current model paths:', error);
+                document.getElementById('currentImageModel').value = 'Error loading';
+                document.getElementById('currentVideoModel').value = 'Error loading';
+            }
+        }
+
+        // Load available models into dropdowns
+        async function loadAvailableModels() {
+            try {
+                const response = await fetch('/api/available-models');
+                const models = await response.json();
+                console.log('Available models:', models);
+                
+                const imageSelect = document.getElementById('imageModelSelect');
+                const videoSelect = document.getElementById('videoModelSelect');
+                
+                // Clear loading messages
+                imageSelect.innerHTML = '<option value="">Select image model...</option>';
+                videoSelect.innerHTML = '<option value="">Select video model...</option>';
+                
+                // Populate image models and set selected value
+                if (models.image && models.image.length > 0) {
+                    models.image.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.path;
+                        option.textContent = model.name || extractModelName(model.path);
+                        
+                        // Set selected if this is the current model
+                        if (model.path === currentImageModel) {
+                            option.selected = true;
+                        }
+                        
+                        imageSelect.appendChild(option);
+                    });
+                } else {
+                    imageSelect.innerHTML = '<option value="">No image models found</option>';
+                }
+                
+                // Populate video models and set selected value
+                if (models.video && models.video.length > 0) {
+                    models.video.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.path;
+                        option.textContent = model.name || extractModelName(model.path);
+                        
+                        // Set selected if this is the current model
+                        if (model.path === currentVideoModel) {
+                            option.selected = true;
+                        }
+                        
+                        videoSelect.appendChild(option);
+                    });
+                } else {
+                    videoSelect.innerHTML = '<option value="">No video models found</option>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading available models:', error);
+                document.getElementById('imageModelSelect').innerHTML = '<option value="">Error loading models</option>';
+                document.getElementById('videoModelSelect').innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
+
+        // Setup model selection handlers
+        function setupModelHandlers() {
+            // Image model handlers
+            document.getElementById('changeImageModel').addEventListener('click', () => {
+                // Ensure dropdown shows current model
+                const imageSelect = document.getElementById('imageModelSelect');
+                for (let option of imageSelect.options) {
+                    if (option.value === currentImageModel) {
                         option.selected = true;
+                        break;
                     }
-                    
-                    imageSelect.appendChild(option);
-                });
-            } else {
-                imageSelect.innerHTML = '<option value="">No image models found</option>';
-            }
-            
-            // Populate video models and set selected value
-            if (models.video && models.video.length > 0) {
-                models.video.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.path;
-                    option.textContent = model.name || extractModelName(model.path);
-                    
-                    // Set selected if this is the current model
-                    if (model.path === currentVideoModel) {
-                        option.selected = true;
-                    }
-                    
-                    videoSelect.appendChild(option);
-                });
-            } else {
-                videoSelect.innerHTML = '<option value="">No video models found</option>';
-            }
-            
-        } catch (error) {
-            console.error('Error loading available models:', error);
-            document.getElementById('imageModelSelect').innerHTML = '<option value="">Error loading models</option>';
-            document.getElementById('videoModelSelect').innerHTML = '<option value="">Error loading models</option>';
-        }
-    }
-
-    // Setup model selection handlers
-    function setupModelHandlers() {
-        // Image model handlers
-        document.getElementById('changeImageModel').addEventListener('click', () => {
-            // Ensure dropdown shows current model
-            const imageSelect = document.getElementById('imageModelSelect');
-            for (let option of imageSelect.options) {
-                if (option.value === currentImageModel) {
-                    option.selected = true;
-                    break;
                 }
-            }
-            
-            document.getElementById('imageModelDropdown').style.display = 'block';
-            document.getElementById('currentImageModel').style.display = 'none';
-            document.getElementById('changeImageModel').style.display = 'none';
-        });
-        
-        document.getElementById('confirmImageModel').addEventListener('click', () => {
-            const selected = document.getElementById('imageModelSelect').value;
-            console.log('Selected image model:', selected);
-            if (selected) {
-                currentImageModel = selected;
-                document.getElementById('currentImageModel').value = extractModelName(selected);
-                console.log('Image model changed to:', currentImageModel);
-            }
-            hideImageDropdown();
-        });
-        
-        document.getElementById('cancelImageModel').addEventListener('click', hideImageDropdown);
-        
-        function hideImageDropdown() {
-            document.getElementById('imageModelDropdown').style.display = 'none';
-            document.getElementById('currentImageModel').style.display = 'block';
-            document.getElementById('changeImageModel').style.display = 'block';
-        }
-        
-        // Video model handlers
-        document.getElementById('changeVideoModel').addEventListener('click', () => {
-            // Ensure dropdown shows current model
-            const videoSelect = document.getElementById('videoModelSelect');
-            for (let option of videoSelect.options) {
-                if (option.value === currentVideoModel) {
-                    option.selected = true;
-                    break;
-                }
-            }
-            
-            document.getElementById('videoModelDropdown').style.display = 'block';
-            document.getElementById('currentVideoModel').style.display = 'none';
-            document.getElementById('changeVideoModel').style.display = 'none';
-        });
-        
-        document.getElementById('confirmVideoModel').addEventListener('click', () => {
-            const selected = document.getElementById('videoModelSelect').value;
-            console.log('Selected video model:', selected);
-            if (selected) {
-                currentVideoModel = selected;
-                document.getElementById('currentVideoModel').value = extractModelName(selected);
-                console.log('Video model changed to:', currentVideoModel);
-            }
-            hideVideoDropdown();
-        });
-        
-        document.getElementById('cancelVideoModel').addEventListener('click', hideVideoDropdown);
-        
-        function hideVideoDropdown() {
-            document.getElementById('videoModelDropdown').style.display = 'none';
-            document.getElementById('currentVideoModel').style.display = 'block';
-            document.getElementById('changeVideoModel').style.display = 'block';
-        }
-    }
-
-    // Save all settings
-    async function saveSettings() {
-        try {
-            console.log('Before save - Image:', currentImageModel, 'Video:', currentVideoModel);
-            
-            // Validate model paths
-            if (!currentImageModel || currentImageModel === '.' || currentImageModel === 'Not set') {
-                throw new Error('Please select a valid image model');
-            }
-            if (!currentVideoModel || currentVideoModel === '.' || currentVideoModel === 'Not set') {
-                throw new Error('Please select a valid video model');
-            }
-            
-            const configUpdates = [];
-            
-            // Add image training config
-            configUpdates.push(getImageTrainingUpdates());
-            
-            // Add video training config  
-            configUpdates.push(getVideoTrainingUpdates());
-            
-            // Add model paths config
-            configUpdates.push({
-                config_type: "model_paths",
-                updates: {
-                    image: currentImageModel,
-                    video: currentVideoModel,
-                    video_pooling: document.getElementById('videoPoolingStrategy').value
-                }
+                
+                document.getElementById('imageModelDropdown').style.display = 'block';
+                document.getElementById('currentImageModel').style.display = 'none';
+                document.getElementById('changeImageModel').style.display = 'none';
             });
             
-            console.log('Saving config updates:', configUpdates);
+            document.getElementById('confirmImageModel').addEventListener('click', () => {
+                const selected = document.getElementById('imageModelSelect').value;
+                console.log('Selected image model:', selected);
+                if (selected) {
+                    currentImageModel = selected;
+                    document.getElementById('currentImageModel').value = extractModelName(selected);
+                    console.log('Image model changed to:', currentImageModel);
+                }
+                hideImageDropdown();
+            });
             
-            for (const update of configUpdates) {
-                const response = await fetch('/api/training-config', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(update)
+            document.getElementById('cancelImageModel').addEventListener('click', hideImageDropdown);
+            
+            function hideImageDropdown() {
+                document.getElementById('imageModelDropdown').style.display = 'none';
+                document.getElementById('currentImageModel').style.display = 'block';
+                document.getElementById('changeImageModel').style.display = 'block';
+            }
+            
+            // Video model handlers
+            document.getElementById('changeVideoModel').addEventListener('click', () => {
+                // Ensure dropdown shows current model
+                const videoSelect = document.getElementById('videoModelSelect');
+                for (let option of videoSelect.options) {
+                    if (option.value === currentVideoModel) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+                
+                document.getElementById('videoModelDropdown').style.display = 'block';
+                document.getElementById('currentVideoModel').style.display = 'none';
+                document.getElementById('changeVideoModel').style.display = 'none';
+            });
+            
+            document.getElementById('confirmVideoModel').addEventListener('click', () => {
+                const selected = document.getElementById('videoModelSelect').value;
+                console.log('Selected video model:', selected);
+                if (selected) {
+                    currentVideoModel = selected;
+                    document.getElementById('currentVideoModel').value = extractModelName(selected);
+                    console.log('Video model changed to:', currentVideoModel);
+                }
+                hideVideoDropdown();
+            });
+            
+            document.getElementById('cancelVideoModel').addEventListener('click', hideVideoDropdown);
+            
+            function hideVideoDropdown() {
+                document.getElementById('videoModelDropdown').style.display = 'none';
+                document.getElementById('currentVideoModel').style.display = 'block';
+                document.getElementById('changeVideoModel').style.display = 'block';
+            }
+        }
+
+        // Save all settings
+        async function saveSettings() {
+            try {
+                console.log('Before save - Image:', currentImageModel, 'Video:', currentVideoModel);
+                
+                // Validate model paths
+                if (!currentImageModel || currentImageModel === '.' || currentImageModel === 'Not set') {
+                    throw new Error('Please select a valid image model');
+                }
+                if (!currentVideoModel || currentVideoModel === '.' || currentVideoModel === 'Not set') {
+                    throw new Error('Please select a valid video model');
+                }
+                
+                const configUpdates = [];
+                
+                // Add image training config
+                configUpdates.push(getImageTrainingUpdates());
+                
+                // Add video training config  
+                configUpdates.push(getVideoTrainingUpdates());
+                
+                // Add model paths config
+                configUpdates.push({
+                    config_type: "model_paths",
+                    updates: {
+                        image: currentImageModel,
+                        video: currentVideoModel,
+                        video_pooling: document.getElementById('videoPoolingStrategy').value
+                    }
                 });
                 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to update ${update.config_type}: ${errorText}`);
+                console.log('Saving config updates:', configUpdates);
+                
+                for (const update of configUpdates) {
+                    const response = await fetch('/api/training-config', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(update)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Failed to update ${update.config_type}: ${errorText}`);
+                    }
                 }
+                
+                alert('All settings saved successfully!');
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings: ' + error.message);
             }
-            
-            alert('All settings saved successfully!');
-            
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            alert('Error saving settings: ' + error.message);
         }
-    }
 
-    // Load image training configuration
-    function loadImageTrainingConfig(config) {
-        const presets = config.depth_presets;
-        
-        // Load normal preset
-        document.querySelector('.image-preset[data-preset="normal"][data-key="epochs"]').value = presets.normal.epochs;
-        document.querySelector('.image-preset[data-preset="normal"][data-key="patience"]').value = presets.normal.patience;
-        document.querySelector('.image-preset[data-preset="normal"][data-key="batch_size"]').value = presets.normal.batch_size;
-        
-        // Load deep preset
-        document.querySelector('.image-preset[data-preset="deep"][data-key="epochs"]').value = presets.deep.epochs;
-        document.querySelector('.image-preset[data-preset="deep"][data-key="patience"]').value = presets.deep.patience;
-        document.querySelector('.image-preset[data-preset="deep"][data-key="batch_size"]').value = presets.deep.batch_size;
-        
-        // Load superdeep preset
-        document.querySelector('.image-preset[data-preset="superdeep"][data-key="epochs"]').value = presets.superdeep.epochs;
-        document.querySelector('.image-preset[data-preset="superdeep"][data-key="patience"]').value = presets.superdeep.patience;
-        document.querySelector('.image-preset[data-preset="superdeep"][data-key="batch_size"]').value = presets.superdeep.batch_size;
-    }
-    
-    // Load video training configuration
-    function loadVideoTrainingConfig(config) {
-        const presets = config.depth_presets;
-        
-        // Set pooling strategy
-        document.getElementById('videoDefaultPooling').value = config.default_pooling_strategy;
-        document.getElementById('videoPoolingStrategy').value = config.default_pooling_strategy;
-        
-        // Load normal preset
-        document.querySelector('.video-preset[data-preset="normal"][data-key="epochs"]').value = presets.normal.epochs;
-        document.querySelector('.video-preset[data-preset="normal"][data-key="patience"]').value = presets.normal.patience;
-        document.querySelector('.video-preset[data-preset="normal"][data-key="batch_size"]').value = presets.normal.batch_size;
-        
-        // Load deep preset
-        document.querySelector('.video-preset[data-preset="deep"][data-key="epochs"]').value = presets.deep.epochs;
-        document.querySelector('.video-preset[data-preset="deep"][data-key="patience"]').value = presets.deep.patience;
-        document.querySelector('.video-preset[data-preset="deep"][data-key="batch_size"]').value = presets.deep.batch_size;
-        
-        // Load superdeep preset
-        document.querySelector('.video-preset[data-preset="superdeep"][data-key="epochs"]').value = presets.superdeep.epochs;
-        document.querySelector('.video-preset[data-preset="superdeep"][data-key="patience"]').value = presets.superdeep.patience;
-        document.querySelector('.video-preset[data-preset="superdeep"][data-key="batch_size"]').value = presets.superdeep.batch_size;
-    }
-    
-    function getImageTrainingUpdates() {
-        const updates = {
-            config_type: "image",
-            updates: {}
-        };
-        
-        // Collect preset updates
-        const presetElements = document.querySelectorAll('.image-preset');
-        presetElements.forEach(element => {
-            const preset = element.dataset.preset;
-            const key = element.dataset.key;
-            const value = element.value;
+        // Load image training configuration
+        function loadImageTrainingConfig(config) {
+            const presets = config.depth_presets;
             
-            updates.updates[`depth_presets.${preset}.${key}`] = parseInt(value);
-        });
-        
-        return updates;
-    }
-    
-    function getVideoTrainingUpdates() {
-        const updates = {
-            config_type: "video", 
-            updates: {
-                "default_pooling_strategy": document.getElementById('videoDefaultPooling').value
-            }
-        };
-        
-        // Collect preset updates
-        const presetElements = document.querySelectorAll('.video-preset');
-        presetElements.forEach(element => {
-            const preset = element.dataset.preset;
-            const key = element.dataset.key;
-            const value = element.value;
+            // Load normal preset
+            document.querySelector('.image-preset[data-preset="normal"][data-key="epochs"]').value = presets.normal.epochs;
+            document.querySelector('.image-preset[data-preset="normal"][data-key="patience"]').value = presets.normal.patience;
+            document.querySelector('.image-preset[data-preset="normal"][data-key="batch_size"]').value = presets.normal.batch_size;
             
-            updates.updates[`depth_presets.${preset}.${key}`] = parseInt(value);
+            // Load deep preset
+            document.querySelector('.image-preset[data-preset="deep"][data-key="epochs"]').value = presets.deep.epochs;
+            document.querySelector('.image-preset[data-preset="deep"][data-key="patience"]').value = presets.deep.patience;
+            document.querySelector('.image-preset[data-preset="deep"][data-key="batch_size"]').value = presets.deep.batch_size;
+            
+            // Load superdeep preset
+            document.querySelector('.image-preset[data-preset="superdeep"][data-key="epochs"]').value = presets.superdeep.epochs;
+            document.querySelector('.image-preset[data-preset="superdeep"][data-key="patience"]').value = presets.superdeep.patience;
+            document.querySelector('.image-preset[data-preset="superdeep"][data-key="batch_size"]').value = presets.superdeep.batch_size;
+        }
+        
+        // Load video training configuration
+        function loadVideoTrainingConfig(config) {
+            const presets = config.depth_presets;
+            
+            // Set pooling strategy
+            document.getElementById('videoDefaultPooling').value = config.default_pooling_strategy;
+            document.getElementById('videoPoolingStrategy').value = config.default_pooling_strategy;
+            
+            // Load normal preset
+            document.querySelector('.video-preset[data-preset="normal"][data-key="epochs"]').value = presets.normal.epochs;
+            document.querySelector('.video-preset[data-preset="normal"][data-key="patience"]').value = presets.normal.patience;
+            document.querySelector('.video-preset[data-preset="normal"][data-key="batch_size"]').value = presets.normal.batch_size;
+            
+            // Load deep preset
+            document.querySelector('.video-preset[data-preset="deep"][data-key="epochs"]').value = presets.deep.epochs;
+            document.querySelector('.video-preset[data-preset="deep"][data-key="patience"]').value = presets.deep.patience;
+            document.querySelector('.video-preset[data-preset="deep"][data-key="batch_size"]').value = presets.deep.batch_size;
+            
+            // Load superdeep preset
+            document.querySelector('.video-preset[data-preset="superdeep"][data-key="epochs"]').value = presets.superdeep.epochs;
+            document.querySelector('.video-preset[data-preset="superdeep"][data-key="patience"]').value = presets.superdeep.patience;
+            document.querySelector('.video-preset[data-preset="superdeep"][data-key="batch_size"]').value = presets.superdeep.batch_size;
+        }
+        
+        function getImageTrainingUpdates() {
+            const updates = {
+                config_type: "image",
+                updates: {}
+            };
+            
+            // Collect preset updates
+            const presetElements = document.querySelectorAll('.image-preset');
+            presetElements.forEach(element => {
+                const preset = element.dataset.preset;
+                const key = element.dataset.key;
+                const value = element.value;
+                
+                updates.updates[`depth_presets.${preset}.${key}`] = parseInt(value);
+            });
+            
+            return updates;
+        }
+        
+        function getVideoTrainingUpdates() {
+            const updates = {
+                config_type: "video", 
+                updates: {
+                    "default_pooling_strategy": document.getElementById('videoDefaultPooling').value
+                }
+            };
+            
+            // Collect preset updates
+            const presetElements = document.querySelectorAll('.video-preset');
+            presetElements.forEach(element => {
+                const preset = element.dataset.preset;
+                const key = element.dataset.key;
+                const value = element.value;
+                
+                updates.updates[`depth_presets.${preset}.${key}`] = parseInt(value);
+            });
+            
+            return updates;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+            
+            // Sync pooling strategy between model config and video training
+            document.getElementById('videoPoolingStrategy').addEventListener('change', function() {
+                document.getElementById('videoDefaultPooling').value = this.value;
+            });
+            
+            document.getElementById('videoDefaultPooling').addEventListener('change', function() {
+                document.getElementById('videoPoolingStrategy').value = this.value;
+            });
         });
-        
-        return updates;
-    }
-    
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-        loadSettings();
-        
-        document.getElementById('saveSettings').addEventListener('click', saveSettings);
-        
-        // Sync pooling strategy between model config and video training
-        document.getElementById('videoPoolingStrategy').addEventListener('change', function() {
-            document.getElementById('videoDefaultPooling').value = this.value;
-        });
-        
-        document.getElementById('videoDefaultPooling').addEventListener('change', function() {
-            document.getElementById('videoPoolingStrategy').value = this.value;
-        });
-    });
-</script>
+    </script>
 </body>
 </html>
