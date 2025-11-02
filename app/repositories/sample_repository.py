@@ -92,3 +92,13 @@ class SampleRepository:
         self.db.delete(sample)
         self.db.commit()
         return True
+    def update_file_path(self, sample_id: int, new_file_path: str) -> bool:
+        """Chỉ cập nhật file_path trong CSDL"""
+        sample = self.get_sample_by_id(sample_id)
+        if not sample:
+            return False
+        
+        sample.file_path = new_file_path
+        self.db.commit()
+        return True
+

@@ -502,7 +502,8 @@
             
             <!-- Sample Detail Card -->
             <div class="sample-detail-card">
-                <form method="POST" action="/update_sample/{{ sample.id }}">
+                <form method="POST" action="/view_sample/{{ sample.id }}/update">
+                    <input type="hidden" name="type" value="{{ sample.type }}">
                     <div class="row">
                         <!-- Preview Column (Left) -->
                         <div class="col-lg-6 preview-column">

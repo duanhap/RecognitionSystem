@@ -8,6 +8,12 @@
         |   ├── models
         |   |    ├── video 
         |   |    └──image
+        |   ├── dataset
+        |   |    ├── video 
+        |   |    |    ├── fake 
+        |   |    |    └── real
+        |   |    └──image (tương tự)
+        |   |    
         │   ├── continue_train_video.py           
         │   ├── core/              # config, kết nối DB
         │   │   ├── __init__.py

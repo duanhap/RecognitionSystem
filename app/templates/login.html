@@ -3,56 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login | DeepFake Detection System</title>
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-blue: #1a3a5f;
             --dark-blue: #0a1f33;
             --accent-blue: #2c5282;
             --light-blue: #4a90e2;
+            --gradient-start: #1a3a5f;
+            --gradient-end: #0a1f33;
         }
         
         body {
-            background-image: url('/static/images/background_login.png');
+            background-image: linear-gradient(rgba(10, 31, 51, 0.85), rgba(10, 31, 51, 0.9)), url('/static/images/background_login.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            position: relative;
+            margin: 0;
+            padding: 0;
         }
         
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10, 31, 51, 0.7);
-            z-index: 1;
+        .container-fluid {
+            width: 100%;
+        }
+        
+        .split-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .login-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            /* Đã bỏ background: rgba(255, 255, 255, 0.95); */
+        }
+        
+        .info-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: white;
+            text-align: center;
         }
         
         .login-container {
-            position: relative;
-            z-index: 2;
             width: 100%;
-            max-width: 450px;
-            padding: 10px;
+            max-width: 400px;
         }
         
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
+            /* Đã bỏ background: white; */
+            background: transparent;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            /* Đã bỏ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
             padding: 2.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .brand-logo img {
+            max-height: 60px;
+          
         }
         
         .login-header {
@@ -61,18 +90,18 @@
         }
         
         .login-header h3 {
-            color: var(--primary-blue);
+            color: white; /* Đổi màu chữ sang trắng */
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
         
         .login-header p {
-            color: #666;
+            color: rgba(255, 255, 255, 0.8); /* Đổi màu chữ sang trắng mờ */
             font-size: 0.9rem;
         }
         
         .form-label {
-            color: var(--dark-blue);
+            color: white; /* Đổi màu label sang trắng */
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
@@ -80,17 +109,25 @@
         .form-control {
             border-radius: 8px;
             padding: 0.75rem 1rem;
-            border: 1px solid #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
         
         .form-control:focus {
             border-color: var(--light-blue);
             box-shadow: 0 0 0 0.2rem rgba(42, 128, 255, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
         }
         
         .btn-login {
-            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
             border: none;
             border-radius: 8px;
             padding: 0.75rem;
@@ -98,14 +135,14 @@
             letter-spacing: 0.5px;
             transition: all 0.3s;
             color: white;
+            width: 100%;
         }
         
         .btn-login:hover {
-            background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue));
+            background: linear-gradient(135deg, var(--accent-blue), var(--light-blue));
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             color: white;
-
         }
         
         .additional-options {
@@ -115,84 +152,182 @@
         }
         
         .additional-options a {
-            color: var(--accent-blue);
+            color: var(--light-blue);
             text-decoration: none;
             transition: color 0.3s;
         }
         
         .additional-options a:hover {
-            color: var(--dark-blue);
+            color: white;
             text-decoration: underline;
         }
         
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 1.5rem 0;
-        }
-        
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .divider span {
-            padding: 0 10px;
-            color: #777;
-            font-size: 0.85rem;
-        }
-        
-        .brand-logo {
-            text-align: center;
+        .system-icon {
+            font-size: 5rem;
             margin-bottom: 1.5rem;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
-        .brand-logo img {
-            max-height: 50px;
+        .system-name {
+            margin-bottom: 1rem;
+        }
+        
+        .system-name h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .system-tagline {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+        
+        .features {
+            text-align: left;
+            max-width: 500px;
+            margin-top: 2rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon {
+            color: var(--light-blue);
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+        
+        .feature-text {
+            flex: 1;
+        }
+        
+        @media (max-width: 992px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            
+            .login-section, .info-section {
+                padding: 1.5rem;
+            }
+            
+            .info-section {
+                order: -1;
+                padding-top: 3rem;
+            }
+            
+            .login-section {
+                padding-bottom: 3rem;
+            }
         }
         
         @media (max-width: 576px) {
             .login-card {
                 padding: 1.5rem;
             }
+            
+            .system-name h1 {
+                font-size: 2rem;
+            }
+            
+            .system-tagline {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card">
-            <!-- Logo Section -->
-            <div class="brand-logo">
-                <img src="/static/images/facial-recognition.png" alt="Logo">
-            </div>
+    <div class="container-fluid">
+        <div class="split-layout">
+          
             
-            
-            <!-- Header Section -->
-            <div class="login-header">
-                <h3>Welcome Back, Admin!</h3>
-                <p>Please sign in to your account</p>
-            </div>
-            
-            <!-- Login Form -->
-            <form method="post" action="/login">
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+            <!-- Right Section - System Information -->
+            <div class="info-section">
+                <div class="system-icon">
+                    <i class="fas fa-user-shield"></i>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                
+                <div class="system-name">
+                    <h1>DeepFake Detection System</h1>
                 </div>
-                <button type="submit" class="btn btn-login w-100">Login</button>
-            </form>
-            
-            <!-- Additional Options -->
-            <div class="additional-options">
-                <a href="#">Forgot Password?</a>
-                <div class="mt-2">
-                    Don't have an account? <a href="#">Sign up</a>
+                
+                <div class="system-tagline">
+                    Advanced AI-Powered Media Authentication for Facial Recognition Security
+                </div>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Real-time Analysis</strong> - Detect manipulated media in real-time with high accuracy
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Advanced AI Algorithms</strong> - Powered by cutting-edge deep learning technology
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Comprehensive Reporting</strong> - Detailed analysis and verification reports
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <!-- Left Section - Login Form -->
+            <div class="login-section">
+                <div class="login-container">
+                    <div class="login-card">
+                        <!-- Logo Section -->
+                        <div class="brand-logo">
+                            <img src="/static/images/facial-recognition.png" alt="Logo">
+                        </div>
+                        
+                        <!-- Header Section -->
+                        <div class="login-header">
+                            <h3>Welcome Back, Admin!</h3>
+                            <p>Please sign in to access the system</p>
+                        </div>
+                        
+                        <!-- Login Form -->
+                        <form method="post" action="/login">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                            </div>
+                            <button type="submit" class="btn btn-login">Login</button>
+                        </form>
+                        
+                        <!-- Additional Options -->
+                        <div class="additional-options">
+                            <a href="#">Forgot Password?</a>
+                            <div class="mt-2">
+                                Don't have an account? <a href="#">Contact Administrator</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

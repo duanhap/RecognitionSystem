@@ -23,17 +23,23 @@ class ViewDetailSampleRouter:
         self, 
         request: Request, 
         sample_id: int, 
-        type: str = Form(...), 
         label: str = Form(...), 
         description: str = Form(...), 
         db: Session = Depends(get_db)
     ):
         service = SampleService(db)
-        success = service.update_sample(sample_id, type, label, description)
+        
+        # Lấy sample hiện tại để lấy type
+        sample = service.get_sample(sample_id)
+        if not sample:
+            return templates.TemplateResponse("error.html", {"request": request, "message": "Sample not found"})
+        
+        success = service.update_sample(sample_id, sample.type, label, description)
         if success:
             return RedirectResponse(url=f"/view_sample/{sample_id}", status_code=303)
         else:
-            return templates.TemplateResponse("error.html", {"request": request, "message": "Sample not found"})
+            return templates.TemplateResponse("error.html", {"request": request, "message": "Failed to update sample"})
+
 
     async def delete_sample(self, request: Request, sample_id: int, db: Session = Depends(get_db)):
         service = SampleService(db)
