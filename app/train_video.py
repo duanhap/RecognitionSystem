@@ -19,18 +19,18 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from PIL import Image
 
-# ==========================
-# ⚙️ CONFIG với DEPTH PRESETS
-# ==========================
-DEPTH_PRESETS = {
-    "normal": {"epochs": 10, "patience": 3, "lr": 1e-4, "batch_size": 32},
-    "deep": {"epochs": 20, "patience": 5, "lr": 5e-5, "batch_size": 24},
-    "superdeep": {"epochs": 30, "patience": 7, "lr": 1e-5, "batch_size": 16},
-}
 
-IMG_SIZE = (299, 299)  # Xception requirement
-FRAME_INTERVAL = 10
-SEED = 42
+from core.config import settings
+
+def get_video_training_config():
+    """Lấy config training cho video từ settings"""
+    return settings.VIDEO_TRAINING_CONFIG
+
+# Thay thế DEPTH_PRESETS bằng:
+config = get_video_training_config()
+depth_presets = config["depth_presets"]
+IMG_SIZE = config["img_size"]
+FRAME_INTERVAL = config["default_frame_interval"]
 
 # ==========================
 # 🎬 TRÍCH FRAME TỪ VIDEO (CẢI TIẾN)
@@ -340,20 +340,39 @@ def create_dirs(base_out):
     for s in subdirs:
         os.makedirs(os.path.join(base_out, s), exist_ok=True)
 
+# Cập nhật các tham số mặc định:
 def run_video_training_pipeline(
-    dataset_root="dataset/video",
-    n_samples=500,
-    sampling_mode="random", 
-    depth="normal",
-    out_root="models/video",
-    train_ratio=0.8,
+    dataset_root=None,
+    n_samples=None,
+    sampling_mode=None,
+    depth=None,
+    out_root=None,
+    train_ratio=None,
     seed=42,
-    force_extract=False,
-    pooling_strategy="mean"
+    force_extract=None,
+    pooling_strategy=None,
+    frame_interval=None,
+    max_frames_per_video=None
 ):
-    # Config từ depth preset
-    assert depth in DEPTH_PRESETS, f"depth must be one of {list(DEPTH_PRESETS.keys())}"
-    cfg = DEPTH_PRESETS[depth]
+    # Lấy config mặc định
+    config = get_video_training_config()
+    
+    # Sử dụng giá trị từ tham số hoặc mặc định
+    dataset_root = dataset_root or config["default_dataset_root"]
+    n_samples = n_samples or config["default_n_samples"]
+    sampling_mode = sampling_mode or config["default_sampling_mode"]
+    depth = depth or config["default_depth"]
+    train_ratio = train_ratio or config["default_train_ratio"]
+    pooling_strategy = pooling_strategy or config["default_pooling_strategy"]
+    frame_interval = frame_interval or config["default_frame_interval"]
+    max_frames_per_video = max_frames_per_video or config["default_max_frames_per_video"]
+    force_extract = force_extract if force_extract is not None else config["default_force_extract"]
+    out_root = out_root or str(settings.TRAINING_OUTPUT_DIRS["video"])
+    
+    # Lấy depth preset
+    depth_presets = config["depth_presets"]
+    assert depth in depth_presets, f"depth must be one of {list(depth_presets.keys())}"
+    cfg = depth_presets[depth]
     
     print(f"Using depth preset: {depth}")
     print(f"Config: {cfg['epochs']} epochs, {cfg['batch_size']} batch_size, {cfg['lr']} lr")
@@ -635,19 +654,44 @@ def run_video_training_pipeline(
 # 🎯 CLI INTERFACE
 # ==========================
 def parse_args():
+    # Lấy config mặc định từ settings
+    config = get_video_training_config()
+    depth_presets = config["depth_presets"]
+    
     parser = argparse.ArgumentParser(description="Train Deepfake Detection Model on Videos")
-    parser.add_argument("--dataset_root", type=str, default="dataset/video", help="Path to video dataset")
-    parser.add_argument("--n_samples", type=int, default=500, help="Number of video samples (balanced real/fake)")
-    parser.add_argument("--sampling_mode", type=str, default="random", choices=["random", "newest"])
-    parser.add_argument("--depth", type=str, default="normal", choices=list(DEPTH_PRESETS.keys()))
-    parser.add_argument("--out_root", type=str, default="models/video", help="Output directory")
-    parser.add_argument("--train_ratio", type=float, default=0.8, help="Train ratio")
-    parser.add_argument("--force_extract", action="store_true", help="Force re-extract frames even if they exist")
-    parser.add_argument("--pooling_strategy", type=str, default="mean", 
+    parser.add_argument("--dataset_root", type=str, 
+                       default=config["default_dataset_root"], 
+                       help="Path to video dataset")
+    parser.add_argument("--n_samples", type=int, 
+                       default=config["default_n_samples"], 
+                       help="Number of video samples (balanced real/fake)")
+    parser.add_argument("--sampling_mode", type=str, 
+                       default=config["default_sampling_mode"], 
+                       choices=["random", "newest"])
+    parser.add_argument("--depth", type=str, 
+                       default=config["default_depth"], 
+                       choices=list(depth_presets.keys()))
+    parser.add_argument("--out_root", type=str, 
+                       default=str(settings.TRAINING_OUTPUT_DIRS["video"]), 
+                       help="Output directory")
+    parser.add_argument("--train_ratio", type=float, 
+                       default=config["default_train_ratio"], 
+                       help="Train ratio")
+    parser.add_argument("--force_extract", 
+                       action="store_true", 
+                       default=config["default_force_extract"],
+                       help="Force re-extract frames even if they exist")
+    parser.add_argument("--pooling_strategy", type=str, 
+                       default=config["default_pooling_strategy"], 
                        choices=["mean", "max", "median", "q75", "confidence_weighted"],
                        help="Pooling strategy for video-level prediction")
+    parser.add_argument("--frame_interval", type=int,
+                       default=config["default_frame_interval"],
+                       help="Frame extraction interval")
+    parser.add_argument("--max_frames_per_video", type=int,
+                       default=config["default_max_frames_per_video"],
+                       help="Maximum frames to extract per video")
     return parser.parse_args()
-
 if __name__ == "__main__":
     args = parse_args()
     result_folder = run_video_training_pipeline(

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --dark-blue: #0a1f33;
+            --accent-blue: #2c5282;
+            --light-blue: #4a90e2;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .settings-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary-blue);
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-blue);
+        }
+        
+        .model-select-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .preset-config {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-blue);
+        }
+        
+        .preset-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .preset-name {
+            font-weight: 600;
+            color: var(--dark-blue);
+            font-size: 1.1rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .config-badge {
+            background: var(--light-blue);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--dark-blue);
+            font-weight: 600;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: none;
+            border: none;
+            border-bottom: 3px solid var(--light-blue);
+            color: var(--light-blue);
+        }
+        .model-select-group .form-control[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .btn-outline-primary {
+            border-color: var(--light-blue);
+            color: var(--light-blue);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--light-blue);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include Sidebar and Header from home.html -->
+    <div id="sidebar">
+        <!-- Same sidebar as home.html -->
+        <div class="sidebar-header">
+            <img src="/static/images/facial-recognition.png" alt="Logo" class="logo">
+            <h3>Admin System</h3>
+            <p class="mb-0">Management Portal</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="/home" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/manage_samples" class="menu-item">
+                <i class="fas fa-vial"></i>
+                <span>Manage Samples</span>
+            </a>
+            <a href="/manage_user" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="/train" class="menu-item">
+                <i class="fas fa-brain"></i>
+                <span>Training</span>
+            </a>
+            <a href="/manage-test-results" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Test Results</span>
+            </a>
+            <a href="/view_feedback" class="menu-item">
+                <i class="fas fa-comments"></i>
+                <span>Feedback</span>
+            </a>
+            <a href="/settings" class="menu-item active">
+                <i class="fas fa-cogs"></i>
+                <span>System Settings</span>
+            </a>
+            <a href="/logout" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+    
+    <div id="content">
+        <div class="top-navbar">
+            <button class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ username|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ username }}</strong>
+                    <div class="text-muted" style="font-size: 0.85rem;">Administrator</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-container">
+            <div class="settings-header">
+                <h1><i class="fas fa-cogs me-3"></i>System Settings</h1>
+                <p class="mb-0">Configure model paths and training parameters</p>
+            </div>
+
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="model-tab" data-bs-toggle="tab" data-bs-target="#model" type="button" role="tab">
+                        <i class="fas fa-project-diagram me-2"></i>Model Configuration
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="image-training-tab" data-bs-toggle="tab" data-bs-target="#image-training" type="button" role="tab">
+                        <i class="fas fa-image me-2"></i>Image Training
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="video-training-tab" data-bs-toggle="tab" data-bs-target="#video-training" type="button" role="tab">
+                        <i class="fas fa-video me-2"></i>Video Training
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="settingsTabsContent">
+                <!-- Model Configuration Tab -->
+                <div class="tab-pane fade show active" id="model" role="tabpanel">
+                    <div class="settings-card">
+                        <h3 class="section-title"><i class="fas fa-project-diagram me-2"></i>Model Paths Configuration</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="model-select-group">
+                                    <label class="form-label">Image Model Path</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="text" class="form-control" id="currentImageModel" readonly>
+                                        <button class="btn btn-outline-primary btn-sm" id="changeImageModel">
+                                            <i class="fas fa-edit"></i> Change
+                                        </button>
+                                    </div>
+                                    <div class="mt-2" id="imageModelDropdown" style="display: none;">
+                                        <select class="form-select" id="imageModelSelect">
+                                            <option value="">Loading image models...</option>
+                                        </select>
+                                        <div class="mt-2">
+                                            <button class="btn btn-success btn-sm me-2" id="confirmImageModel">Confirm</button>
+                                            <button class="btn btn-secondary btn-sm" id="cancelImageModel">Cancel</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">Current model for image processing</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="model-select-group">
+                                    <label class="form-label">Video Model Path</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="text" class="form-control" id="currentVideoModel" readonly>
+                                        <button class="btn btn-outline-primary btn-sm" id="changeVideoModel">
+                                            <i class="fas fa-edit"></i> Change
+                                        </button>
+                                    </div>
+                                    <div class="mt-2" id="videoModelDropdown" style="display: none;">
+                                        <select class="form-select" id="videoModelSelect">
+                                            <option value="">Loading video models...</option>
+                                        </select>
+                                        <div class="mt-2">
+                                            <button class="btn btn-success btn-sm me-2" id="confirmVideoModel">Confirm</button>
+                                            <button class="btn btn-secondary btn-sm" id="cancelVideoModel">Cancel</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">Current model for video processing</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="model-select-group">
+                                    <label class="form-label">Video Pooling Strategy</label>
+                                    <select class="form-select" id="videoPoolingStrategy">
+                                        <option value="mean">Mean</option>
+                                        <option value="max">Max</option>
+                                        <option value="median">Median</option>
+                                        <option value="q75">Q75 (75th Percentile)</option>
+                                        <option value="confidence_weighted">Confidence Weighted</option>
+                                    </select>
+                                    <div class="form-text">Strategy for pooling video frame predictions</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <!-- Image Training Tab -->
+                <div class="tab-pane fade" id="image-training" role="tabpanel">
+                    <div class="settings-card">
+                        <h3 class="section-title"><i class="fas fa-image me-2"></i>Image Training Configuration</h3>
+                        <p class="text-muted mb-4">Configure depth presets for image model training</p>
+                        
+                        <div id="imagePresetsContainer">
+                            <!-- Normal Preset -->
+                            <div class="preset-config">
+                                <div class="preset-header">
+                                    <span class="preset-name">Normal Preset</span>
+                                    <span class="config-badge">Default</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Epochs</label>
+                                        <input type="number" class="form-control image-preset" data-preset="normal" data-key="epochs" value="10" min="1" max="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Patience</label>
+                                        <input type="number" class="form-control image-preset" data-preset="normal" data-key="patience" value="3" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Learning Rate</label>
+                                        <input type="text" class="form-control" value="1e-4" readonly>
+                                        <div class="form-text">Fixed value</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Batch Size</label>
+                                        <input type="number" class="form-control image-preset" data-preset="normal" data-key="batch_size" value="32" min="1" max="128">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Deep Preset -->
+                            <div class="preset-config">
+                                <div class="preset-header">
+                                    <span class="preset-name">Deep Preset</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Epochs</label>
+                                        <input type="number" class="form-control image-preset" data-preset="deep" data-key="epochs" value="20" min="1" max="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Patience</label>
+                                        <input type="number" class="form-control image-preset" data-preset="deep" data-key="patience" value="5" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Learning Rate</label>
+                                        <input type="text" class="form-control" value="5e-5" readonly>
+                                        <div class="form-text">Fixed value</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Batch Size</label>
+                                        <input type="number" class="form-control image-preset" data-preset="deep" data-key="batch_size" value="24" min="1" max="128">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Super Deep Preset -->
+                            <div class="preset-config">
+                                <div class="preset-header">
+                                    <span class="preset-name">Super Deep Preset</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Epochs</label>
+                                        <input type="number" class="form-control image-preset" data-preset="superdeep" data-key="epochs" value="30" min="1" max="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Patience</label>
+                                        <input type="number" class="form-control image-preset" data-preset="superdeep" data-key="patience" value="7" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Learning Rate</label>
+                                        <input type="text" class="form-control" value="1e-5" readonly>
+                                        <div class="form-text">Fixed value</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Batch Size</label>
+                                        <input type="number" class="form-control image-preset" data-preset="superdeep" data-key="batch_size" value="16" min="1" max="128">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Training Tab -->
+                <div class="tab-pane fade" id="video-training" role="tabpanel">
+                    <div class="settings-card">
+                        <h3 class="section-title"><i class="fas fa-video me-2"></i>Video Training Configuration</h3>
+                        <p class="text-muted mb-4">Configure depth presets and pooling strategy for video model training</p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Default Pooling Strategy</label>
+                                <select class="form-select" id="videoDefaultPooling">
+                                    <option value="mean">Mean</option>
+                                    <option value="max">Max</option>
+                                    <option value="median">Median</option>
+                                    <option value="q75">Q75 (75th Percentile)</option>
+                                    <option value="confidence_weighted">Confidence Weighted</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="videoPresetsContainer">
+                            <!-- Normal Preset -->
+                            <div class="preset-config">
+                                <div class="preset-header">
+                                    <span class="preset-name">Normal Preset</span>
+                                    <span class="config-badge">Default</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Epochs</label>
+                                        <input type="number" class="form-control video-preset" data-preset="normal" data-key="epochs" value="10" min="1" max="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Patience</label>
+                                        <input type="number" class="form-control video-preset" data-preset="normal" data-key="patience" value="3" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Learning Rate</label>
+                                        <input type="text" class="form-control" value="1e-4" readonly>
+                                        <div class="form-text">Fixed value</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Batch Size</label>
+                                        <input type="number" class="form-control video-preset" data-preset="normal" data-key="batch_size" value="32" min="1" max="128">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Deep Preset -->
+                            <div class="preset-config">
+                                <div class="preset-header">
+                                    <span class="preset-name">Deep Preset</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Epochs</label>
+                                        <input type="number" class="form-control video-preset" data-preset="deep" data-key="epochs" value="20" min="1" max="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Patience</label>
+                                        <input type="number" class="form-control video-preset" data-preset="deep" data-key="patience" value="5" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Learning Rate</label>
+                                        <input type="text" class="form-control" value="5e-5" readonly>
+                                        <div class="form-text">Fixed value</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Batch Size</label>
+                                        <input type="number" class="form-control video-preset" data-preset="deep" data-key="batch_size" value="24" min="1" max="128">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Super Deep Preset -->
+                            <div class="preset-config">
+                                <div class="preset-header">
+                                    <span class="preset-name">Super Deep Preset</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Epochs</label>
+                                        <input type="number" class="form-control video-preset" data-preset="superdeep" data-key="epochs" value="30" min="1" max="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Patience</label>
+                                        <input type="number" class="form-control video-preset" data-preset="superdeep" data-key="patience" value="7" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Learning Rate</label>
+                                        <input type="text" class="form-control" value="1e-5" readonly>
+                                        <div class="form-text">Fixed value</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Batch Size</label>
+                                        <input type="number" class="form-control video-preset" data-preset="superdeep" data-key="batch_size" value="16" min="1" max="128">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-save btn-lg" id="saveSettings">
+                    <i class="fas fa-save me-2"></i>Save All Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Helper function to extract model name from full path
+    function extractModelName(fullPath) {
+        if (!fullPath) return 'Not set';
+        
+        // Handle Windows paths
+        const normalizedPath = fullPath.replace(/\\/g, '/');
+        
+        // Extract folder name from path like: app/models/image/20251025_152553_Xception/model_final.h5
+        const match = normalizedPath.match(/\/([^\/]+)\/model_final\.h5$/);
+        return match ? match[1] : normalizedPath;
+    }
+
+    // Current model paths
+    let currentImageModel = '';
+    let currentVideoModel = '';
+
+    // Main load settings function
+    async function loadSettings() {
+        try {
+            console.log('Loading settings...');
+            
+            const response = await fetch('/api/training-config');
+            const config = await response.json();
+            console.log('Config loaded:', config);
+            
+            // Load current model paths
+            await loadCurrentModelPaths(config);
+            
+            // Load available models
+            await loadAvailableModels();
+            
+            // Setup event handlers
+            setupModelHandlers();
+            
+            // Load training configs
+            loadImageTrainingConfig(config.image);
+            loadVideoTrainingConfig(config.video);
+            
+            // Set pooling strategy
+            const poolingStrategy = config.video_pooling_strategy || config.video?.default_pooling_strategy || 'mean';
+            document.getElementById('videoPoolingStrategy').value = poolingStrategy;
+            
+            console.log('Settings loaded successfully');
+            
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            alert('Error loading settings: ' + error.message);
+        }
+    }
+
+    // Load current model paths from config
+    async function loadCurrentModelPaths(config = null) {
+        try {
+            let currentConfig = config;
+            
+            if (!currentConfig) {
+                const response = await fetch('/api/training-config');
+                currentConfig = await response.json();
+            }
+            
+            console.log('Config for model paths:', currentConfig);
+            
+            // Get paths from API response
+            const imagePath = currentConfig.image_model_path || '';
+            const videoPath = currentConfig.video_model_path || '';
+            
+            currentImageModel = imagePath;
+            currentVideoModel = videoPath;
+            
+            // Display friendly names
+            const imageName = extractModelName(imagePath);
+            const videoName = extractModelName(videoPath);
+            
+            document.getElementById('currentImageModel').value = imageName;
+            document.getElementById('currentVideoModel').value = videoName;
+            
+            console.log('Current models loaded - Image:', imageName, 'Video:', videoName);
+            
+        } catch (error) {
+            console.error('Error loading current model paths:', error);
+            document.getElementById('currentImageModel').value = 'Error loading';
+            document.getElementById('currentVideoModel').value = 'Error loading';
+        }
+    }
+
+    // Load available models into dropdowns
+    async function loadAvailableModels() {
+        try {
+            const response = await fetch('/api/available-models');
+            const models = await response.json();
+            console.log('Available models:', models);
+            
+            const imageSelect = document.getElementById('imageModelSelect');
+            const videoSelect = document.getElementById('videoModelSelect');
+            
+            // Clear loading messages
+            imageSelect.innerHTML = '<option value="">Select image model...</option>';
+            videoSelect.innerHTML = '<option value="">Select video model...</option>';
+            
+            // Populate image models and set selected value
+            if (models.image && models.image.length > 0) {
+                models.image.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.path;
+                    option.textContent = model.name || extractModelName(model.path);
+                    
+                    // Set selected if this is the current model
+                    if (model.path === currentImageModel) {
+                        option.selected = true;
+                    }
+                    
+                    imageSelect.appendChild(option);
+                });
+            } else {
+                imageSelect.innerHTML = '<option value="">No image models found</option>';
+            }
+            
+            // Populate video models and set selected value
+            if (models.video && models.video.length > 0) {
+                models.video.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.path;
+                    option.textContent = model.name || extractModelName(model.path);
+                    
+                    // Set selected if this is the current model
+                    if (model.path === currentVideoModel) {
+                        option.selected = true;
+                    }
+                    
+                    videoSelect.appendChild(option);
+                });
+            } else {
+                videoSelect.innerHTML = '<option value="">No video models found</option>';
+            }
+            
+        } catch (error) {
+            console.error('Error loading available models:', error);
+            document.getElementById('imageModelSelect').innerHTML = '<option value="">Error loading models</option>';
+            document.getElementById('videoModelSelect').innerHTML = '<option value="">Error loading models</option>';
+        }
+    }
+
+    // Setup model selection handlers
+    function setupModelHandlers() {
+        // Image model handlers
+        document.getElementById('changeImageModel').addEventListener('click', () => {
+            // Ensure dropdown shows current model
+            const imageSelect = document.getElementById('imageModelSelect');
+            for (let option of imageSelect.options) {
+                if (option.value === currentImageModel) {
+                    option.selected = true;
+                    break;
+                }
+            }
+            
+            document.getElementById('imageModelDropdown').style.display = 'block';
+            document.getElementById('currentImageModel').style.display = 'none';
+            document.getElementById('changeImageModel').style.display = 'none';
+        });
+        
+        document.getElementById('confirmImageModel').addEventListener('click', () => {
+            const selected = document.getElementById('imageModelSelect').value;
+            console.log('Selected image model:', selected);
+            if (selected) {
+                currentImageModel = selected;
+                document.getElementById('currentImageModel').value = extractModelName(selected);
+                console.log('Image model changed to:', currentImageModel);
+            }
+            hideImageDropdown();
+        });
+        
+        document.getElementById('cancelImageModel').addEventListener('click', hideImageDropdown);
+        
+        function hideImageDropdown() {
+            document.getElementById('imageModelDropdown').style.display = 'none';
+            document.getElementById('currentImageModel').style.display = 'block';
+            document.getElementById('changeImageModel').style.display = 'block';
+        }
+        
+        // Video model handlers
+        document.getElementById('changeVideoModel').addEventListener('click', () => {
+            // Ensure dropdown shows current model
+            const videoSelect = document.getElementById('videoModelSelect');
+            for (let option of videoSelect.options) {
+                if (option.value === currentVideoModel) {
+                    option.selected = true;
+                    break;
+                }
+            }
+            
+            document.getElementById('videoModelDropdown').style.display = 'block';
+            document.getElementById('currentVideoModel').style.display = 'none';
+            document.getElementById('changeVideoModel').style.display = 'none';
+        });
+        
+        document.getElementById('confirmVideoModel').addEventListener('click', () => {
+            const selected = document.getElementById('videoModelSelect').value;
+            console.log('Selected video model:', selected);
+            if (selected) {
+                currentVideoModel = selected;
+                document.getElementById('currentVideoModel').value = extractModelName(selected);
+                console.log('Video model changed to:', currentVideoModel);
+            }
+            hideVideoDropdown();
+        });
+        
+        document.getElementById('cancelVideoModel').addEventListener('click', hideVideoDropdown);
+        
+        function hideVideoDropdown() {
+            document.getElementById('videoModelDropdown').style.display = 'none';
+            document.getElementById('currentVideoModel').style.display = 'block';
+            document.getElementById('changeVideoModel').style.display = 'block';
+        }
+    }
+
+    // Save all settings
+    async function saveSettings() {
+        try {
+            console.log('Before save - Image:', currentImageModel, 'Video:', currentVideoModel);
+            
+            // Validate model paths
+            if (!currentImageModel || currentImageModel === '.' || currentImageModel === 'Not set') {
+                throw new Error('Please select a valid image model');
+            }
+            if (!currentVideoModel || currentVideoModel === '.' || currentVideoModel === 'Not set') {
+                throw new Error('Please select a valid video model');
+            }
+            
+            const configUpdates = [];
+            
+            // Add image training config
+            configUpdates.push(getImageTrainingUpdates());
+            
+            // Add video training config  
+            configUpdates.push(getVideoTrainingUpdates());
+            
+            // Add model paths config
+            configUpdates.push({
+                config_type: "model_paths",
+                updates: {
+                    image: currentImageModel,
+                    video: currentVideoModel,
+                    video_pooling: document.getElementById('videoPoolingStrategy').value
+                }
+            });
+            
+            console.log('Saving config updates:', configUpdates);
+            
+            for (const update of configUpdates) {
+                const response = await fetch('/api/training-config', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(update)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to update ${update.config_type}: ${errorText}`);
+                }
+            }
+            
+            alert('All settings saved successfully!');
+            
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            alert('Error saving settings: ' + error.message);
+        }
+    }
+
+    // Load image training configuration
+    function loadImageTrainingConfig(config) {
+        const presets = config.depth_presets;
+        
+        // Load normal preset
+        document.querySelector('.image-preset[data-preset="normal"][data-key="epochs"]').value = presets.normal.epochs;
+        document.querySelector('.image-preset[data-preset="normal"][data-key="patience"]').value = presets.normal.patience;
+        document.querySelector('.image-preset[data-preset="normal"][data-key="batch_size"]').value = presets.normal.batch_size;
+        
+        // Load deep preset
+        document.querySelector('.image-preset[data-preset="deep"][data-key="epochs"]').value = presets.deep.epochs;
+        document.querySelector('.image-preset[data-preset="deep"][data-key="patience"]').value = presets.deep.patience;
+        document.querySelector('.image-preset[data-preset="deep"][data-key="batch_size"]').value = presets.deep.batch_size;
+        
+        // Load superdeep preset
+        document.querySelector('.image-preset[data-preset="superdeep"][data-key="epochs"]').value = presets.superdeep.epochs;
+        document.querySelector('.image-preset[data-preset="superdeep"][data-key="patience"]').value = presets.superdeep.patience;
+        document.querySelector('.image-preset[data-preset="superdeep"][data-key="batch_size"]').value = presets.superdeep.batch_size;
+    }
+    
+    // Load video training configuration
+    function loadVideoTrainingConfig(config) {
+        const presets = config.depth_presets;
+        
+        // Set pooling strategy
+        document.getElementById('videoDefaultPooling').value = config.default_pooling_strategy;
+        document.getElementById('videoPoolingStrategy').value = config.default_pooling_strategy;
+        
+        // Load normal preset
+        document.querySelector('.video-preset[data-preset="normal"][data-key="epochs"]').value = presets.normal.epochs;
+        document.querySelector('.video-preset[data-preset="normal"][data-key="patience"]').value = presets.normal.patience;
+        document.querySelector('.video-preset[data-preset="normal"][data-key="batch_size"]').value = presets.normal.batch_size;
+        
+        // Load deep preset
+        document.querySelector('.video-preset[data-preset="deep"][data-key="epochs"]').value = presets.deep.epochs;
+        document.querySelector('.video-preset[data-preset="deep"][data-key="patience"]').value = presets.deep.patience;
+        document.querySelector('.video-preset[data-preset="deep"][data-key="batch_size"]').value = presets.deep.batch_size;
+        
+        // Load superdeep preset
+        document.querySelector('.video-preset[data-preset="superdeep"][data-key="epochs"]').value = presets.superdeep.epochs;
+        document.querySelector('.video-preset[data-preset="superdeep"][data-key="patience"]').value = presets.superdeep.patience;
+        document.querySelector('.video-preset[data-preset="superdeep"][data-key="batch_size"]').value = presets.superdeep.batch_size;
+    }
+    
+    function getImageTrainingUpdates() {
+        const updates = {
+            config_type: "image",
+            updates: {}
+        };
+        
+        // Collect preset updates
+        const presetElements = document.querySelectorAll('.image-preset');
+        presetElements.forEach(element => {
+            const preset = element.dataset.preset;
+            const key = element.dataset.key;
+            const value = element.value;
+            
+            updates.updates[`depth_presets.${preset}.${key}`] = parseInt(value);
+        });
+        
+        return updates;
+    }
+    
+    function getVideoTrainingUpdates() {
+        const updates = {
+            config_type: "video", 
+            updates: {
+                "default_pooling_strategy": document.getElementById('videoDefaultPooling').value
+            }
+        };
+        
+        // Collect preset updates
+        const presetElements = document.querySelectorAll('.video-preset');
+        presetElements.forEach(element => {
+            const preset = element.dataset.preset;
+            const key = element.dataset.key;
+            const value = element.value;
+            
+            updates.updates[`depth_presets.${preset}.${key}`] = parseInt(value);
+        });
+        
+        return updates;
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSettings();
+        
+        document.getElementById('saveSettings').addEventListener('click', saveSettings);
+        
+        // Sync pooling strategy between model config and video training
+        document.getElementById('videoPoolingStrategy').addEventListener('change', function() {
+            document.getElementById('videoDefaultPooling').value = this.value;
+        });
+        
+        document.getElementById('videoDefaultPooling').addEventListener('change', function() {
+            document.getElementById('videoPoolingStrategy').value = this.value;
+        });
+    });
+</script>
+</body>
+</html>

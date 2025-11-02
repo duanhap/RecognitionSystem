@@ -22,15 +22,14 @@ from tensorflow.keras.callbacks import ModelCheckpoint, CSVLogger, EarlyStopping
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from PIL import Image
+from core.config import settings  # Thêm import này
+
+config = settings.VIDEO_TRAINING_CONFIG  # Lấy config video
 
 # ==========================
 # ⚙️ CONFIG với DEPTH PRESETS
 # ==========================
-DEPTH_PRESETS = {
-    "normal": {"epochs": 10, "patience": 3, "lr": 1e-5, "batch_size": 32},
-    "deep": {"epochs": 20, "patience": 5, "lr": 5e-6, "batch_size": 24},
-    "superdeep": {"epochs": 30, "patience": 7, "lr": 1e-6, "batch_size": 16},
-}
+DEPTH_PRESETS = config["depth_presets"]
 
 IMG_SIZE = (299, 299)
 FRAME_INTERVAL = 10
@@ -634,17 +633,19 @@ def continue_video_training(
 # ==========================
 # 🎯 CLI INTERFACE
 # ==========================
+
 def parse_args():
+    
     parser = argparse.ArgumentParser(description="Continue Training Deepfake Detection Model on Videos")
     parser.add_argument("--model_path", type=str, required=True, help="Path to model to continue training")
-    parser.add_argument("--dataset_root", type=str, default="dataset/video", help="Path to video dataset")
-    parser.add_argument("--n_samples", type=int, default=500, help="Number of video samples (balanced real/fake)")
-    parser.add_argument("--sampling_mode", type=str, default="random", choices=["random", "newest"])
-    parser.add_argument("--depth", type=str, default="normal", choices=list(DEPTH_PRESETS.keys()))
-    parser.add_argument("--out_root", type=str, default="models/video", help="Output directory")
-    parser.add_argument("--train_ratio", type=float, default=0.8, help="Train ratio")
-    parser.add_argument("--force_extract", action="store_true", help="Force re-extract frames even if they exist")
-    parser.add_argument("--pooling_strategy", type=str, default="mean", 
+    parser.add_argument("--dataset_root", type=str, default=config["default_dataset_root"], help="Path to video dataset")
+    parser.add_argument("--n_samples", type=int, default=config["default_n_samples"], help="Number of video samples (balanced real/fake)")
+    parser.add_argument("--sampling_mode", type=str, default=config["default_sampling_mode"], choices=["random", "newest"])
+    parser.add_argument("--depth", type=str, default=config["default_depth"], choices=list(config["depth_presets"].keys()))
+    parser.add_argument("--out_root", type=str, default=str(settings.TRAINING_OUTPUT_DIRS["video"]), help="Output directory")
+    parser.add_argument("--train_ratio", type=float, default=config["default_train_ratio"], help="Train ratio")
+    parser.add_argument("--force_extract", action="store_true", default=config["default_force_extract"], help="Force re-extract frames even if they exist")
+    parser.add_argument("--pooling_strategy", type=str, default=config["default_pooling_strategy"], 
                        choices=["mean", "max", "median", "q75", "confidence_weighted"],
                        help="Pooling strategy for video-level prediction")
     return parser.parse_args()
@@ -662,4 +663,4 @@ if __name__ == "__main__":
         force_extract=args.force_extract,
         pooling_strategy=args.pooling_strategy
     )
-    print(f"🎉 Continue training finished! Results in: {result_folder}")
+    print(f"Continue training finished! Results in: {result_folder}")

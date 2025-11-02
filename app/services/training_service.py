@@ -7,6 +7,7 @@ import random
 import json
 import pandas as pd
 from app.repositories.sample_repository import SampleRepository
+from app.core.config import settings
 
 class TrainingService:
     def __init__(self, db):
@@ -17,29 +18,47 @@ class TrainingService:
         self._is_running = False
 
     async def start_training(self, train_type: str, num_samples: int, sample_mode: str, train_depth: str, train_mode: str, resume_model: str = None, user_id: int = None):
-        print(f"Starting training: type={train_type}, samples={num_samples}, depth={train_depth}, mode={train_mode}, user_id={user_id}")
+        print(f"Starting training: type={train_type}, samples={num_samples}, depth={train_depth}, mode={train_mode}, resume_model={resume_model}, user_id={user_id}")
         
         try:
             # Xác định file script theo loại
-            script_name = "train_video.py" if train_type == "video" else "train_image.py"
             app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        
+            # Xác định file script theo loại VÀ MODE
+            if train_mode == "from_scratch":
+                script_name = "train_video.py" if train_type == "video" else "train_image.py"
+            else:  # resume mode
+                script_name = "continue_train_video.py" if train_type == "video" else "continue_train_image.py"
+            
             script_path = os.path.join(app_dir, script_name)
 
             if not os.path.exists(script_path):
                 return {"error": f"Training script not found: {script_path}"}
-
-            # Xây dựng command
-            cmd = [
-                sys.executable,
-                script_path,
-                "--dataset_root", f"dataset/{train_type}",
-                "--n_samples", str(num_samples),
-                "--sampling_mode", sample_mode,
-                "--depth", train_depth,
-                "--out_root", f"models/{train_type}",
-                "--train_ratio", "0.8",
-                "--pooling_strategy", "mean",
-            ]
+            if train_mode == "from_scratch":
+                # Xây dựng command
+                cmd = [
+                    sys.executable,
+                    script_path,
+                    "--dataset_root", f"dataset/{train_type}",
+                    "--n_samples", str(num_samples),
+                    "--sampling_mode", sample_mode,
+                    "--depth", train_depth,
+                    "--out_root", f"models/{train_type}"
+                ]
+            elif train_mode == "resume":
+                if not resume_model:
+                    return {"error": "Resume model path must be provided for resume training mode."}
+                resume_model_full =  "models/video/"+resume_model+"/model_final.h5" if train_type == "video" else "models/image/"+resume_model+"/model_final.h5"
+                print(f"🔍 Resume model full path: {resume_model_full}")  # DEBUG
+              
+                cmd = [
+                    sys.executable,
+                    script_path,
+                    "--model_path", resume_model_full,
+                    "--n_samples", str(num_samples),
+                    "--sampling_mode", sample_mode,
+                    "--depth", train_depth,
+                ]
 
             print("🚀 Running command:", " ".join(cmd))
 
@@ -107,14 +126,23 @@ class TrainingService:
             with open(metrics_file, 'r', encoding='utf-8') as f:
                 metrics = json.load(f)
         
-            
-            # Lấy thông số từ metrics (video_level với pooling_strategy = "mean")
-            video_metrics = metrics.get("video_level", {}).get("mean", {})
-            
-            accuracy = video_metrics.get("accuracy", 0)
-            precision = video_metrics.get("precision", 0)
-            recall = video_metrics.get("recall", 0)
-            f1 = video_metrics.get("f1", 0)
+            if train_type == "image":
+                # Lấy thông số từ metrics (image level)
+                accuracy = metrics.get("accuracy", 0)
+                precision = (metrics.get("precision_real", 0)+metrics.get("precision_fake", 0))/2
+                recall = (metrics.get("recall_real", 0)+metrics.get("recall_fake", 0))/2
+                f1 = (metrics.get("f1_real", 0)+metrics.get("f1_fake", 0))/2
+                print(f"Image metrics - Acc: {accuracy}, Prec: {precision}, Recall: {recall}, F1: {f1}")  # DEBUG
+            else:
+                pooling_strategy = settings.VIDEO_TRAINING_CONFIG.get("default_pooling_strategy", "mean")
+                # Lấy thông số từ metrics (video_level với pooling_strategy = "mean")
+                video_metrics = metrics.get("video_level", {}).get(pooling_strategy, {})
+
+                accuracy = video_metrics.get("accuracy", 0)
+                precision = video_metrics.get("precision", 0)
+                recall = video_metrics.get("recall", 0)
+                f1 = video_metrics.get("f1", 0)
+                print(f"Video metrics - Acc: {accuracy}, Prec: {precision}, Recall: {recall}, F1: {f1}")  # DEBUG
 
             if return_code == 0:
                 message = "Training completed successfully!"
@@ -197,22 +225,30 @@ class TrainingService:
             
             # Đọc samples_list.xlsx
             df_samples = pd.read_excel(samples_file)
-            
-            # Lấy thông số từ metrics (video_level với pooling_strategy = "mean")
-            video_metrics = metrics.get("video_level", {}).get("mean", {})
-            
-            accuracy = video_metrics.get("accuracy", 0)
-            precision = video_metrics.get("precision", 0)
-            recall = video_metrics.get("recall", 0)
-            f1 = video_metrics.get("f1", 0)
-            
+            if model_path.__contains__("video"):
+                # Lấy thông số từ metrics (video_level với pooling_strategy = "mean")
+                pooling_strategy = settings.VIDEO_TRAINING_CONFIG.get("default_pooling_strategy", "mean")
+                video_metrics = metrics.get("video_level", {}).get(pooling_strategy, {})
+                accuracy = video_metrics.get("accuracy", 0)
+                precision = video_metrics.get("precision", 0)
+                recall = video_metrics.get("recall", 0)
+                f1 = video_metrics.get("f1", 0)
+            else:        
+                accuracy = metrics.get("accuracy", 0)
+                precision = (metrics.get("precision_real", 0)+metrics.get("precision_fake", 0))/2
+                recall = (metrics.get("recall_real", 0)+metrics.get("recall_fake", 0))/2
+                f1 = (metrics.get("f1_real", 0)+metrics.get("f1_fake", 0))/2
+
             # Đường dẫn file model
             model_file_path = os.path.join(model_path, "model_final.h5")
             
             # Lưu từng sample vào database
             saved_count = 0
             for _, row in df_samples.iterrows():
-                video_path = row['video_path']
+                if model_path.__contains__("video"):
+                    video_path = row['video_path']
+                else:
+                    video_path = row["filepath"]
                 
                 # Chuẩn hóa đường dẫn (thay \ thành /)
                 normalized_path = video_path.replace('\\', '/')

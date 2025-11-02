@@ -26,6 +26,8 @@ import cv2
 import tensorflow as tf
 from PIL import Image
 from glob import glob
+from core.config import settings
+config = settings.IMAGE_TRAINING_CONFIG
 
 # ========== CONFIG ==========
 DATASET_DIR = "dataset/image"
@@ -33,11 +35,7 @@ MODEL_DIR = "models/image"
 IMG_SIZE = (299, 299)  # Xception requirement
 
 # DEPTH PRESETS (giống train_image.py)
-DEPTH_PRESETS = {
-    "normal": {"epochs": 10, "patience": 3, "lr": 1e-5, "batch_size": 32},
-    "deep": {"epochs": 20, "patience": 5, "lr": 5e-6, "batch_size": 24},
-    "superdeep": {"epochs": 30, "patience": 7, "lr": 1e-6, "batch_size": 16},
-}
+DEPTH_PRESETS = config["depth_presets"]
 
 # ========== GRAD-CAM IMPROVED ==========
 def make_gradcam_heatmap(img_array, model, last_conv_layer_name, pred_index=None):
@@ -392,13 +390,17 @@ def continue_train(selected_model_path, num_samples=1000, mode="random", train_r
 if __name__ == "__main__":
     import argparse
     
+    
+    # Lấy config
+    
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", type=str, required=True, help="Path to model to continue training")
-    parser.add_argument("--n_samples", type=int, default=1000, help="Number of samples to use")
-    parser.add_argument("--sampling_mode", type=str, default="random", choices=["random", "newest"])
-    parser.add_argument("--train_ratio", type=float, default=0.8, help="Train ratio")
-    parser.add_argument("--depth", type=str, default="normal", 
-                       choices=list(DEPTH_PRESETS.keys()), help="Training depth preset")
+    parser.add_argument("--n_samples", type=int, default=config["default_n_samples"], help="Number of samples to use")
+    parser.add_argument("--sampling_mode", type=str, default=config["default_sampling_mode"], choices=["random", "newest"])
+    parser.add_argument("--train_ratio", type=float, default=config["default_train_ratio"], help="Train ratio")
+    parser.add_argument("--depth", type=str, default=config["default_depth"], 
+                       choices=list(config["depth_presets"].keys()), help="Training depth preset")
     
     args = parser.parse_args()
     
@@ -410,4 +412,4 @@ if __name__ == "__main__":
         depth=args.depth
     )
     
-    print(f"✅ Training completed! Results in: {output_dir}")
+    print(f"Training completed! Results in: {output_dir}")

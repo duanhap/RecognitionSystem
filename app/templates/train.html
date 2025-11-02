@@ -16,7 +16,7 @@
       <div class="row mb-3">
         <div class="col-md-6">
           <label class="form-label">Training Type</label>
-          <select class="form-select" name="train_type" required>
+          <select class="form-select" name="train_type" id="trainType" required>
             <option value="image">Image</option>
             <option value="video">Video</option>
           </select>
@@ -57,12 +57,10 @@
       <div class="row mb-3 d-none" id="resumeSection">
         <div class="col-md-12">
           <label class="form-label">Select Existing Model to Resume</label>
-          <select class="form-select" name="resume_model">
-            <option value="">-- Select Model --</option>
-            <option value="model_v1">20_12_2025_v1.h5</option>
-            <option value="model_v2">20_12_2025_v2.h5</option>
-            <option value="model_best">21_12_2025.h5</option>
+          <select class="form-select" name="resume_model" id="resumeModelSelect">
+            <option value="">-- Loading models... --</option>
           </select>
+          <div class="form-text" id="modelCountText">No models found</div>
         </div>
       </div>
 
@@ -159,9 +157,76 @@
 </div>
 
 <script>
+// Load available models khi trang được tải
+document.addEventListener('DOMContentLoaded', function() {
+    loadAvailableModels();
+    
+    // Thêm event listener cho train type và train mode
+    document.getElementById('trainType').addEventListener('change', loadAvailableModels);
+    document.getElementById('trainMode').addEventListener('change', toggleResumeSection);
+    
+    // Khởi tạo trạng thái ban đầu
+    toggleResumeSection();
+});
+// Load danh sách model có sẵn
+async function loadAvailableModels() {
+    const trainType = document.getElementById('trainType').value;
+    const resumeSelect = document.getElementById('resumeModelSelect');
+    const modelCountText = document.getElementById('modelCountText');
+    
+    try {
+        const response = await fetch('/train/available-models');
+        const data = await response.json();
+        
+        const models = data[trainType] || [];
+        
+        // Clear existing options
+        resumeSelect.innerHTML = '<option value="">-- Select Model --</option>';
+        
+        // Add model options
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.name;  // Gửi tên folder (ví dụ: 20251102_093809_Xception)
+            option.textContent = model.name;
+            option.title = model.path;  // Hiển thị full path khi hover
+            resumeSelect.appendChild(option);
+        });
+        
+        // Update model count text
+        modelCountText.textContent = `Found ${models.length} ${trainType} models`;
+        modelCountText.className = models.length > 0 ? 'form-text text-success' : 'form-text text-warning';
+        
+    } catch (error) {
+        console.error('Error loading models:', error);
+        resumeSelect.innerHTML = '<option value="">-- Error loading models --</option>';
+        modelCountText.textContent = 'Error loading models';
+        modelCountText.className = 'form-text text-danger';
+    }
+}
+// Toggle resume section
+function toggleResumeSection() {
+    const trainMode = document.getElementById('trainMode');
+    const resumeSection = document.getElementById('resumeSection');
+    
+    if (trainMode.value === 'resume') {
+        resumeSection.classList.remove('d-none');
+        // Load models khi chuyển sang resume mode
+        loadAvailableModels();
+    } else {
+        resumeSection.classList.add('d-none');
+    }
+}
 // Form submission
 document.getElementById('trainingForm').addEventListener('submit', function(e) {
     e.preventDefault();
+     // Validate resume model selection
+    const trainMode = document.getElementById('trainMode').value;
+    const resumeModel = document.getElementById('resumeModelSelect').value;
+    
+    if (trainMode === 'resume' && !resumeModel) {
+        alert('Please select a model to resume training from');
+        return;
+    }
     startTraining();
 });
 

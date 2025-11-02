@@ -1,0 +1,71 @@
+{
+  "IMAGE_TRAINING_CONFIG": {
+    "depth_presets": {
+      "normal": {
+        "epochs": 10,
+        "patience": 1,
+        "lr": 0.0001,
+        "batch_size": 32
+      },
+      "deep": {
+        "epochs": 20,
+        "patience": 5,
+        "lr": 5e-05,
+        "batch_size": 24
+      },
+      "superdeep": {
+        "epochs": 30,
+        "patience": 7,
+        "lr": 1e-05,
+        "batch_size": 16
+      }
+    },
+    "default_depth": "normal",
+    "default_n_samples": 1000,
+    "default_sampling_mode": "random",
+    "default_train_ratio": 0.8,
+    "img_size": [
+      299,
+      299
+    ],
+    "default_dataset_root": "dataset/image"
+  },
+  "VIDEO_TRAINING_CONFIG": {
+    "depth_presets": {
+      "normal": {
+        "epochs": 10,
+        "patience": 3,
+        "lr": 0.0001,
+        "batch_size": 32
+      },
+      "deep": {
+        "epochs": 20,
+        "patience": 5,
+        "lr": 5e-05,
+        "batch_size": 24
+      },
+      "superdeep": {
+        "epochs": 30,
+        "patience": 7,
+        "lr": 1e-05,
+        "batch_size": 16
+      }
+    },
+    "default_depth": "normal",
+    "default_n_samples": 500,
+    "default_sampling_mode": "random",
+    "default_train_ratio": 0.8,
+    "default_pooling_strategy": "mean",
+    "default_frame_interval": 10,
+    "default_max_frames_per_video": 50,
+    "default_force_extract": false,
+    "img_size": [
+      299,
+      299
+    ],
+    "default_dataset_root": "dataset/video"
+  },
+  "IMAGE_MODEL_PATH": "app\\models\\image\\20251031_120748_continue_from_20251031_114053_Xception\\model_final.h5",
+  "VIDEO_MODEL_PATH": "app\\models\\video\\20251031_223619_continue_superdeep_20251031_215958_Xception_video\\model_final.h5",
+  "VIDEO_POOLING_STRATEGY": "mean"
+}

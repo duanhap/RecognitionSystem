@@ -39,17 +39,19 @@ from sklearn.model_selection import train_test_split
 
 import matplotlib.pyplot as plt
 
-# -------------------------
-# Config / Depth presets
-# -------------------------
-DEPTH_PRESETS = {
-    "normal": {"epochs": 10, "patience": 3, "lr": 1e-4, "batch_size": 32},
-    "deep": {"epochs": 20, "patience": 5, "lr": 5e-5, "batch_size": 24},
-    "superdeep": {"epochs": 30, "patience": 7, "lr": 1e-5, "batch_size": 16},
-}
+# Import config
+from core.config import settings
 
-IMG_SIZE = (299, 299)  # Xception default input size
+# -------------------------
+# Config từ settings
+# -------------------------
+IMG_SIZE = settings.IMAGE_TRAINING_CONFIG["img_size"]
 AUTOTUNE = tf.data.AUTOTUNE
+
+def get_image_training_config():
+    """Lấy config training cho image từ settings"""
+    return settings.IMAGE_TRAINING_CONFIG
+
 
 # -------------------------
 # Utility functions
@@ -191,16 +193,37 @@ def save_and_overlay_heatmap(orig_path, heatmap, out_path, alpha=0.4):
 # Main pipeline
 # -------------------------
 def run_pipeline(
-    dataset_root,
-    n_samples,
-    sampling_mode,
-    depth,
-    out_root,
-    train_ratio=0.8,
+    dataset_root=None,
+    n_samples=None,
+    sampling_mode=None,
+    depth=None,
+    out_root=None,
+    train_ratio=None,
     seed=42
 ):
-    assert depth in DEPTH_PRESETS, f"depth must be one of {list(DEPTH_PRESETS.keys())}"
-    cfg = DEPTH_PRESETS[depth]
+       # Lấy config mặc định từ settings
+    config = get_image_training_config()
+    
+    # Sử dụng giá trị từ tham số hoặc mặc định từ config
+    dataset_root = dataset_root or config["default_dataset_root"]
+    n_samples = n_samples or config["default_n_samples"]
+    sampling_mode = sampling_mode or config["default_sampling_mode"]
+    depth = depth or config["default_depth"]
+    train_ratio = train_ratio or config["default_train_ratio"]
+    out_root = out_root or str(settings.TRAINING_OUTPUT_DIRS["image"])
+    
+    # Lấy depth preset từ config
+    depth_presets = config["depth_presets"]
+    assert depth in depth_presets, f"depth must be one of {list(depth_presets.keys())}"
+    cfg = depth_presets[depth]
+
+    print(f"=== Image Training Configuration ===")
+    print(f"Dataset: {dataset_root}")
+    print(f"Samples: {n_samples} ({sampling_mode} sampling)")
+    print(f"Depth: {depth} (epochs: {cfg['epochs']}, batch: {cfg['batch_size']}, lr: {cfg['lr']})")
+    print(f"Train ratio: {train_ratio}")
+    print(f"Output: {out_root}")
+    print("=" * 40)
 
     # 1) gather samples - CÂN BẰNG REAL/FAKE
     samples = gather_samples_balanced(dataset_root, n_samples, mode=sampling_mode)
@@ -212,17 +235,32 @@ def run_pipeline(
     fake_count = sum(1 for _, label in samples if label == "fake")
     print(f"Final dataset: {real_count} real, {fake_count} fake (total: {len(samples)})")
     
-    # 5) prepare outputs - TẠO MODEL_FOLDER TRƯỚC
+    # 2) prepare outputs - TẠO MODEL_FOLDER TRƯỚC
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_folder = os.path.join(out_root, f"{timestamp}_Xception")
     create_dirs(model_folder)
+
+    # Lưu config sử dụng
+    training_config = {
+        "dataset_root": dataset_root,
+        "n_samples": n_samples,
+        "sampling_mode": sampling_mode,
+        "depth": depth,
+        "train_ratio": train_ratio,
+        "seed": seed,
+        "depth_config": cfg,
+        "timestamp": timestamp
+    }
+    
+    with open(os.path.join(model_folder, "training_config.json"), "w") as f:
+        json.dump(training_config, f, indent=2)
 
     # LƯU SAMPLES_LIST VÀO MODEL_FOLDER
     df_samples = pd.DataFrame(samples, columns=["filepath", "label"])
     sample_list_path = os.path.join(model_folder, "samples_list.xlsx")
     df_samples.to_excel(sample_list_path, index=False)
 
-    # 2) split train/test
+    # 3) split train/test
     filepaths = df_samples["filepath"].tolist()
     labels = df_samples["label"].tolist()
     fp_train, fp_test, y_train, y_test = train_test_split(
@@ -244,13 +282,13 @@ def run_pipeline(
     else:
         fp_tr, fp_val, y_tr, y_val = fp_train, [], y_train, []
 
-    # 3) create datasets
+    # 4) create datasets
     batch_size = cfg["batch_size"]
     train_ds = make_dataset(fp_tr, y_tr, batch_size, shuffle=True)
     val_ds = make_dataset(fp_val, y_val, batch_size, shuffle=False) if len(fp_val)>0 else None
     test_ds = make_dataset(fp_test, y_test, batch_size, shuffle=False)
 
-    # 4) build model
+    # 5) build model
     model = build_model(cfg["lr"])
 
     # callbacks
@@ -383,13 +421,20 @@ def run_pipeline(
 # CLI entrypoint
 # -------------------------
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset_root", type=str, default="dataset/image", help="Path to dataset/image folder")
-    parser.add_argument("--n_samples", type=int, default=1000, help="Number of samples to use (both classes combined)")
-    parser.add_argument("--sampling_mode", type=str, default="random", choices=["random", "newest"], help="How to select samples")
-    parser.add_argument("--depth", type=str, default="normal", choices=list(DEPTH_PRESETS.keys()), help="Training depth preset")
-    parser.add_argument("--out_root", type=str, default="models/image", help="Where to store model output (base path)")
-    parser.add_argument("--train_ratio", type=float, default=0.8, help="Train ratio (rest goes to test)")
+    config = get_image_training_config()
+    parser = argparse.ArgumentParser(description="Train Image Deepfake Detection Model")
+    parser.add_argument("--dataset_root", type=str, default=config["default_dataset_root"], 
+                       help="Path to dataset/image folder")
+    parser.add_argument("--n_samples", type=int, default=config["default_n_samples"], 
+                       help="Number of samples to use (both classes combined)")
+    parser.add_argument("--sampling_mode", type=str, default=config["default_sampling_mode"], 
+                       choices=["random", "newest"], help="How to select samples")
+    parser.add_argument("--depth", type=str, default=config["default_depth"], 
+                       choices=list(config["depth_presets"].keys()), help="Training depth preset")
+    parser.add_argument("--out_root", type=str, default=str(settings.TRAINING_OUTPUT_DIRS["image"]), 
+                       help="Where to store model output")
+    parser.add_argument("--train_ratio", type=float, default=config["default_train_ratio"], 
+                       help="Train ratio (rest goes to test)")
     return parser.parse_args()
 
 if __name__ == "__main__":
