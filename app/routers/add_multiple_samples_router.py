@@ -17,7 +17,8 @@ class AddMultipleSamplesRouter:
         self.router.add_api_route("/add_multiple_samples", self.add_sample, methods=["POST"])
 
     async def add_sample_page(self, request: Request):
-        return templates.TemplateResponse("add_multiple_samples.html", {"request": request})
+        username = request.cookies.get("username")  # lấy từ cookie
+        return templates.TemplateResponse("add_multiple_samples.html", {"request": request, "username": username})
 
     async def add_sample(
         self, 

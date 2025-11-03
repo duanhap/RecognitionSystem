@@ -1,536 +1,952 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Add Single Sample</title>
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Cropper.js -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <style>
-    :root {
-      --primary-color: #4361ee;
-      --secondary-color: #3f37c9;
-      --success-color: #4cc9f0;
-      --light-bg: #f8f9fa;
-      --card-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    
-    body { 
-      background-color: var(--light-bg);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    .card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: var(--card-shadow);
-    }
-    
-    .card-header {
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: white;
-      border-radius: 12px 12px 0 0 !important;
-      padding: 1.5rem;
-    }
-    
-    .btn-primary {
-      background: var(--primary-color);
-      border: none;
-      padding: 0.6rem 1.5rem;
-      font-weight: 500;
-    }
-    
-    .btn-primary:hover {
-      background: var(--secondary-color);
-    }
-    
-    .preview-container {
-      border: 2px dashed #dee2e6;
-      border-radius: 8px;
-      padding: 1rem;
-      background-color: #fdfdfd;
-      min-height: 300px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .preview-container img, .preview-container video {
-      max-width: 100%;
-      max-height: 400px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .control-panel {
-      background-color: white;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-top: 1.5rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    
-    .range-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
-    .range-controls input[type="range"] {
-      flex: 1;
-    }
-    
-    .time-inputs {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
-    .time-inputs .input-group {
-      flex: 1;
-    }
-    
-    .preview-section {
-      margin-top: 1.5rem;
-    }
-    
-    .crop-preview {
-      width: 200px;
-      height: 150px;
-      overflow: hidden;
-      border-radius: 8px;
-      margin: 0 auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      border: 2px solid #4361ee;
-      background: #f8f9fa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .step-indicator {
-      display: flex;
-      margin-bottom: 1.5rem;
-      justify-content: center;
-    }
-    
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      max-width: 150px;
-    }
-    
-    .step-number {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #e9ecef;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      transition: all 0.3s ease;
-    }
-    
-    .step.active .step-number {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .step-label {
-      font-size: 0.85rem;
-      text-align: center;
-      color: #6c757d;
-    }
-    
-    .step.active .step-label {
-      color: var(--primary-color);
-      font-weight: 500;
-    }
-    
-    .step-line {
-      flex: 1;
-      height: 2px;
-      background-color: #e9ecef;
-      margin: 20px 10px 0;
-    }
-    
-    .file-info {
-      background-color: #e7f1ff;
-      border-radius: 8px;
-      padding: 0.75rem;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
-    
-    .alert-success {
-      background-color: #d1fae5;
-      border-color: #a7f3d0;
-      color: #065f46;
-    }
-    
-    .video-wrapper {
-      position: relative;
-      width: 100%;
-      display: inline-block;
-    }
-    
-    .trim-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
-      z-index: 10;
-    }
-    
-    .crop-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.3);
-      z-index: 5;
-      display: none;
-    }
-    
-    .crop-area {
-      position: absolute;
-      border: 2px dashed #ff0000;
-      background: rgba(255,0,0,0.1);
-      cursor: move;
-      z-index: 6;
-    }
-    
-    .crop-handle {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: #ff0000;
-      border: 1px solid white;
-      border-radius: 50%;
-    }
-    
-    .handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
-    .handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
-    .handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-    .handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
-    
-    .video-crop-instruction {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      z-index: 7;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Single Sample - Admin System</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cropper.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --dark-blue: #0a1f33;
+            --accent-blue: #2c5282;
+            --light-blue: #4a90e2;
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-header .logo {
+            height: 40px;
+            margin-bottom: 0.5rem;
+        }
+        
+        #sidebar.collapsed .sidebar-header h3,
+        #sidebar.collapsed .sidebar-header p {
+            display: none;
+        }
+        
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--light-blue);
+        }
+        
+        .menu-item i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        .left-section {
+            display: flex;
+            align-items: center;  /* căn cùng hàng ngang */
+            gap: 20px;            /* khoảng cách giữa nút và chữ */
+        }
+        
+        #sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        #sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+        
+        /* Main Content Styles */
+        #content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+        
+        #content.expanded {
+            margin-left: var(--sidebar-collapsed);
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        /* Add Single Sample Styles */
+        .page-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .sample-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .step-indicator {
+            display: flex;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            max-width: 150px;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            text-align: center;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary-blue);
+        }
+        
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background-color: #e9ecef;
+            margin: 20px 10px 0;
+        }
+        
+        .step-content {
+            display: block;
+        }
+        
+        .step-content.d-none {
+            display: none !important;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select, .form-textarea {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--light-blue);
+            box-shadow: 0 0 0 0.2rem rgba(42, 128, 255, 0.25);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover {
+            border-color: var(--light-blue);
+            background: #f0f8ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--light-blue);
+            margin-bottom: 1rem;
+        }
+        
+        .file-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .preview-container {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 1rem;
+            background: #fdfdfd;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .preview-container img, .preview-container video {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+        }
+        
+        .control-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #f1f3f4;
+        }
+        
+        .crop-preview {
+            width: 200px;
+            height: 150px;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid var(--primary-blue);
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            display: inline-block;
+        }
+        
+        .trim-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+        }
+        
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 5;
+            display: none;
+        }
+        
+        .crop-area {
+            position: absolute;
+            border: 2px dashed #ff0000;
+            background: rgba(255,0,0,0.1);
+            cursor: move;
+            z-index: 6;
+        }
+        
+        .crop-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            border: 1px solid white;
+            border-radius: 50%;
+        }
+        
+        .handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
+        
+        .video-crop-instruction {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 7;
+            display: none;
+        }
+        
+        .preview-with-crop {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        
+        .crop-preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .crop-preview-area {
+            position: absolute;
+            border: 3px solid #00ff00;
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+        
+        .crop-preview-info {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .preview-dimmed {
+            filter: brightness(0.6);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f1f3f4;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #6c757d, #545b62);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-back:hover, .btn-next:hover, .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .range-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .range-controls input[type="range"] {
+            flex: 1;
+        }
+        
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .time-inputs .input-group {
+            flex: 1;
+        }
+        
+        .alert-custom {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: var(--sidebar-collapsed);
+            }
+            
+            #sidebar.collapsed {
+                width: 0;
+            }
+            
+            #content {
+                margin-left: var(--sidebar-collapsed);
+            }
+            
+            #content.expanded {
+                margin-left: 0;
+            }
+            
+            .step-indicator {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .step-line {
+                display: none;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container mt-4 mb-5">
-    <div class="card">
-      <div class="card-header text-center">
-        <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add Single Sample</h2>
-      </div>
-      
-      <div class="card-body p-4">
-        <!-- Step Indicator -->
-        <div class="step-indicator">
-          <div class="step active" id="step1">
-            <div class="step-number">1</div>
-            <div class="step-label">File Details</div>
-          </div>
-          <div class="step-line"></div>
-          <div class="step" id="step2">
-            <div class="step-number">2</div>
-            <div class="step-label">Crop & Trim</div>
-          </div>
-          <div class="step-line"></div>
-          <div class="step" id="step3">
-            <div class="step-number">3</div>
-            <div class="step-label">Preview & Save</div>
-          </div>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/images/facial-recognition.png" alt="Logo" class="logo">
+            <h3>Admin System</h3>
+            <p class="mb-0">Management Portal</p>
         </div>
-
-        <form id="singleForm" method="post" action="/add_single_sample" enctype="multipart/form-data">
-          <!-- Step 1: File Details -->
-          <div class="step-content" id="step1-content">
-            <div class="row">
-              <div class="col-md-6">
-                <!-- Type -->
-                <div class="mb-3">
-                  <label class="form-label"><strong>Type</strong></label>
-                  <select class="form-select" id="typeSelect" name="type" required>
-                    <option value="">-- Select Type --</option>
-                    <option value="image">Image</option>
-                    <option value="video">Video</option>
-                  </select>
-                </div>
-
-                <!-- Label -->
-                <div class="mb-3">
-                  <label class="form-label"><strong>Label</strong></label>
-                  <select class="form-select" name="label" required>
-                    <option value="real">Real</option>
-                    <option value="fake">Fake</option>
-                  </select>
-                </div>
-
-                <!-- Description -->
-                <div class="mb-3">
-                  <label class="form-label"><strong>Description</strong></label>
-                  <textarea class="form-control" name="description" rows="3" placeholder="Source: ..." id="descriptionInput"></textarea>
-                </div>
-              </div>
-              
-              <div class="col-md-6">
-                <!-- File Upload -->
-                <div class="mb-3">
-                  <label class="form-label"><strong>Upload File</strong></label>
-                  <div class="preview-container" id="dropZone">
-                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Drag & drop your file here or click to browse</p>
-                    <input type="file" id="fileInput" name="file" class="d-none" accept="image/*,video/*" required>
-                    <button type="button" class="btn btn-outline-primary mt-2" id="browseBtn">Browse Files</button>
-                  </div>
-                </div>
-                
-                <!-- File Info -->
-                <div class="file-info d-none" id="fileInfo">
-                  <div class="d-flex justify-content-between">
-                    <span><strong>File:</strong> <span id="fileName"></span></span>
-                    <span><strong>Size:</strong> <span id="fileSize"></span></span>
-                  </div>
-                  <div class="mt-1">
-                    <span><strong>Type:</strong> <span id="fileType"></span></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="d-flex justify-content-between mt-4">
-              <button type="button" class="btn btn-secondary" onclick="history.back()">
-                <i class="fas fa-arrow-left me-1"></i> Back
-              </button>
-              <button type="button" class="btn btn-primary" id="nextStep1">
-                Next <i class="fas fa-arrow-right ms-1"></i>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Step 2: Crop & Trim -->
-          <div class="step-content d-none" id="step2-content">
-            <div class="row">
-              <div class="col-md-8">
-                <div class="preview-container" id="preview-container">
-                  <p class="text-muted">Preview will appear here</p>
-                </div>
-                
-                <!-- Video Crop Overlay -->
-                <div id="video-crop-overlay" class="crop-overlay">
-                  <div class="video-crop-instruction" id="cropInstruction">
-                    Drag to move, drag handles to resize
-                  </div>
-                  <div id="cropArea" class="crop-area" style="display: none;">
-                    <div class="crop-handle handle-nw"></div>
-                    <div class="crop-handle handle-ne"></div>
-                    <div class="crop-handle handle-sw"></div>
-                    <div class="crop-handle handle-se"></div>
-                  </div>
-                </div>
-                
-                <!-- Video Controls Overlay -->
-                <div id="video-overlay" class="trim-overlay d-none">
-                  <div>
-                    <span>Start: <span id="currentStartTime">0</span>s</span> - 
-                    <span>End: <span id="currentEndTime">0</span>s</span>
-                  </div>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-light" id="playTrim">
-                      <i class="fas fa-play"></i> Play Trim
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="col-md-4">
-                <div class="control-panel">
-                  <h5><i class="fas fa-crop-alt me-2"></i>Crop Controls</h5>
-                  
-                  <!-- Image Crop Controls -->
-                  <div id="image-controls" class="d-none">
-                    <p class="text-muted small">Drag to select crop area or adjust manually:</p>
-                    
-                    <div class="mb-2">
-                      <label class="form-label small">Position: <span id="cropPos">0,0</span></label>
-                    </div>
-                    
-                    <div class="mb-2">
-                      <label class="form-label small">Size: <span id="cropSize">0x0</span></label>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                      <button type="button" class="btn btn-outline-primary btn-sm" id="resetCrop">
-                        <i class="fas fa-redo me-1"></i> Reset Crop
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <!-- Video Controls -->
-                  <div id="video-controls" class="d-none">
-                    <h5><i class="fas fa-film me-2"></i>Video Controls</h5>
-                    
-                    <div class="mb-3">
-                      <label class="form-label">Trim Video</label>
-                      <div class="time-inputs">
-                        <div class="input-group input-group-sm">
-                          <span class="input-group-text">Start (s)</span>
-                          <input type="number" id="startTime" class="form-control" placeholder="0" min="0" step="0.1" value="0">
-                        </div>
-                        <div class="input-group input-group-sm">
-                          <span class="input-group-text">End (s)</span>
-                          <input type="number" id="endTime" class="form-control" placeholder="0" min="0" step="0.1" value="0">
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                      <label class="form-label">Timeline</label>
-                      <div class="range-controls">
-                        <span class="small">0s</span>
-                        <input type="range" id="startRange" min="0" step="0.1" value="0" class="form-range">
-                        <input type="range" id="endRange" min="0" step="0.1" value="0" class="form-range">
-                        <span class="small" id="maxDuration">0s</span>
-                      </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                      <label class="form-label">Video Crop</label>
-                      <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="enableVideoCrop">
-                        <label class="form-check-label" for="enableVideoCrop">
-                          Enable frame cropping
-                        </label>
-                      </div>
-                    </div>
-                    
-                    <div id="video-crop-controls" class="d-none">
-                      <div class="mb-2">
-                        <label class="form-label small">Crop Area: <span id="videoCropSize">0x0</span></label>
-                      </div>
-                      <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="resetVideoCrop">
-                          <i class="fas fa-crop me-1"></i> Reset Video Crop
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Crop Preview -->
-                <div class="preview-section mt-3">
-                  <h6><i class="fas fa-eye me-2"></i>Crop Preview</h6>
-                  <div class="crop-preview" id="cropPreview">
-                    <span class="text-muted small">Preview will appear here</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="d-flex justify-content-between mt-4">
-              <button type="button" class="btn btn-secondary" id="prevStep2">
-                <i class="fas fa-arrow-left me-1"></i> Previous
-              </button>
-              <button type="button" class="btn btn-primary" id="nextStep2">
-                Next <i class="fas fa-arrow-right ms-1"></i>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Step 3: Preview & Save -->
-          <div class="step-content d-none" id="step3-content">
-            <div class="row">
-              <div class="col-md-6">
-                <h5><i class="fas fa-info-circle me-2"></i>Sample Details</h5>
-                <div class="mb-3">
-                  <label class="form-label"><strong>Type</strong></label>
-                  <p id="previewType">-</p>
-                </div>
-                
-                <div class="mb-3">
-                  <label class="form-label"><strong>Label</strong></label>
-                  <p id="previewLabel">-</p>
-                </div>
-                
-                <div class="mb-3">
-                  <label class="form-label"><strong>Description</strong></label>
-                  <p id="previewDescription">-</p>
-                </div>
-                
-                <div class="mb-3">
-                  <label class="form-label"><strong>Crop Data</strong></label>
-                  <pre id="previewCropData" class="bg-light p-2 rounded small">-</pre>
-                </div>
-              </div>
-              
-              <div class="col-md-6">
-                <h5><i class="fas fa-file me-2"></i>Final Preview</h5>
-                <div class="preview-container" id="finalPreview">
-                  <p class="text-muted">Final preview will appear here</p>
-                </div>
-                <div class="mt-2 text-center">
-                  <small class="text-muted">Note: This is a preview. Actual crop/trim will be applied when saving.</small>
-                </div>
-              </div>
-            </div>
-            
-            <div class="d-flex justify-content-between mt-4">
-              <button type="button" class="btn btn-secondary" id="prevStep3">
-                <i class="fas fa-arrow-left me-1"></i> Previous
-              </button>
-              <button type="submit" class="btn btn-success">
-                <i class="fas fa-save me-1"></i> Save Sample
-              </button>
-            </div>
-          </div>
-
-          <input type="hidden" name="crop_data" id="cropData">
-        </form>
-        {% if message %}
-          <div class="alert {{ 'alert-success' if 'successfully' in message else 'alert-danger' }}">
-            {{ message }}
-          </div>
-        {% endif %}
-      </div>
+        
+        <div class="sidebar-menu">
+            <a href="/" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/manage_samples" class="menu-item">
+                <i class="fas fa-vial"></i>
+                <span>Manage Samples</span>
+            </a>
+            <a href="/manage_user" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="/train" class="menu-item">
+                <i class="fas fa-brain"></i>
+                <span>Training</span>
+            </a>
+            <a href="/manage-test-results" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Test Results</span>
+            </a>
+            <a href="/view_feedback" class="menu-item">
+                <i class="fas fa-comments"></i>
+                <span>Feedback</span>
+            </a>
+            <a href="/settings" class="menu-item">
+                <i class="fas fa-cogs"></i>
+                <span>System Settings</span>
+            </a>
+            <a href="/logout" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
     </div>
-  </div>
+    
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Top Navbar -->
+        <div class="top-navbar">
+             <div class="left-section">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                        <h3 class="page-title"><i class="fas fa-plus-circle me-2"></i>Add Single Sample</h3>
+                </div>
+                
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ username|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ username }}</strong>
+                    <div class="text-muted" style="font-size: 0.85rem;">Administrator</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <!-- <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-plus-circle me-2"></i>Add Single Sample</h1>
+            </div> -->
+            
+            <!-- Sample Card -->
+            <div class="sample-card">
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <div class="step active" id="step1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">File Details</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step" id="step2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Crop & Trim</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step" id="step3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Preview & Save</div>
+                    </div>
+                </div>
 
-  <script>
-    // DOM Elements
+                <form id="singleForm" method="post" action="/add_single_sample" enctype="multipart/form-data">
+                    <!-- Step 1: File Details -->
+                    <div class="step-content" id="step1-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-section">
+                                    <h5><i class="fas fa-info-circle me-2"></i>Sample Information</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Type</label>
+                                        <select class="form-select" id="typeSelect" name="type" required>
+                                            <option value="">-- Select Type --</option>
+                                            <option value="image">Image</option>
+                                            <option value="video">Video</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Label</label>
+                                        <select class="form-select" name="label" required>
+                                            <option value="real">Real</option>
+                                            <option value="fake">Fake</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control form-textarea" name="description" rows="3" placeholder="Source: ..." id="descriptionInput"></textarea>
+                                        <div class="form-text text-muted">Provide details about the sample source and characteristics</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-section">
+                                    <h5><i class="fas fa-upload me-2"></i>File Upload</h5>
+                                    
+                                    <div class="file-upload-area" id="dropZone">
+                                        <div class="upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <h5>Drop your file here or click to browse</h5>
+                                        <p class="text-muted">Supports images and videos</p>
+                                        <input type="file" id="fileInput" name="file" class="d-none" accept="image/*,video/*" required>
+                                        <button type="button" class="btn btn-outline-primary mt-2" id="browseBtn">
+                                            <i class="fas fa-folder-open me-2"></i>Browse Files
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="file-info d-none" id="fileInfo">
+                                        <div class="d-flex justify-content-between">
+                                            <span><strong>File:</strong> <span id="fileName"></span></span>
+                                            <span><strong>Size:</strong> <span id="fileSize"></span></span>
+                                        </div>
+                                        <div class="mt-1">
+                                            <span><strong>Type:</strong> <span id="fileType"></span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-back" onclick="history.back()">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Samples
+                            </button>
+                            <button type="button" class="btn btn-next" id="nextStep1">
+                                Next <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Crop & Trim -->
+                    <div class="step-content d-none" id="step2-content">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="preview-container" id="preview-container">
+                                    <p class="text-muted">Preview will appear here</p>
+                                </div>
+                                
+                                <!-- Video Crop Overlay -->
+                                <div id="video-crop-overlay" class="crop-overlay">
+                                    <div class="video-crop-instruction" id="cropInstruction">
+                                        Drag to move, drag handles to resize
+                                    </div>
+                                    <div id="cropArea" class="crop-area" style="display: none;">
+                                        <div class="crop-handle handle-nw"></div>
+                                        <div class="crop-handle handle-ne"></div>
+                                        <div class="crop-handle handle-sw"></div>
+                                        <div class="crop-handle handle-se"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Video Controls Overlay -->
+                                <div id="video-overlay" class="trim-overlay d-none">
+                                    <div>
+                                        <span>Start: <span id="currentStartTime">0</span>s</span> - 
+                                        <span>End: <span id="currentEndTime">0</span>s</span>
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-light" id="playTrim">
+                                            <i class="fas fa-play"></i> Play Trim
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="control-panel">
+                                    <h5><i class="fas fa-crop-alt me-2"></i>Crop Controls</h5>
+                                    
+                                    <!-- Image Crop Controls -->
+                                    <div id="image-controls" class="d-none">
+                                        <p class="text-muted small mb-3">Drag to select crop area on the image</p>
+                                        
+                                        <div class="mb-2">
+                                            <label class="form-label small">Position: <span id="cropPos">0,0</span></label>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <label class="form-label small">Size: <span id="cropSize">0x0</span></label>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="resetCrop">
+                                                <i class="fas fa-redo me-1"></i> Reset Crop
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Video Controls -->
+                                    <div id="video-controls" class="d-none">
+                                        <h6><i class="fas fa-film me-2"></i>Video Controls</h6>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Trim Video</label>
+                                            <div class="time-inputs">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">Start (s)</span>
+                                                    <input type="number" id="startTime" class="form-control" placeholder="0" min="0" step="0.1" value="0">
+                                                </div>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">End (s)</span>
+                                                    <input type="number" id="endTime" class="form-control" placeholder="0" min="0" step="0.1" value="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Timeline</label>
+                                            <div class="range-controls">
+                                                <span class="small">0s</span>
+                                                <input type="range" id="startRange" min="0" step="0.1" value="0" class="form-range">
+                                                <input type="range" id="endRange" min="0" step="0.1" value="0" class="form-range">
+                                                <span class="small" id="maxDuration">0s</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Video Crop</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="enableVideoCrop">
+                                                <label class="form-check-label" for="enableVideoCrop">
+                                                    Enable frame cropping
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="video-crop-controls" class="d-none">
+                                            <div class="mb-2">
+                                                <label class="form-label small">Crop Area: <span id="videoCropSize">0x0</span></label>
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" id="resetVideoCrop">
+                                                    <i class="fas fa-crop me-1"></i> Reset Video Crop
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Crop Preview -->
+                                <div class="preview-section mt-3">
+                                    <h6><i class="fas fa-eye me-2"></i>Crop Preview</h6>
+                                    <div class="crop-preview" id="cropPreview">
+                                        <span class="text-muted small">Preview will appear here</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-back" id="prevStep2">
+                                <i class="fas fa-arrow-left me-2"></i>Previous
+                            </button>
+                            <button type="button" class="btn btn-next" id="nextStep2">
+                                Next <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Preview & Save -->
+                    <div class="step-content d-none" id="step3-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-section">
+                                    <h5><i class="fas fa-info-circle me-2"></i>Sample Details</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Type</strong></label>
+                                        <p id="previewType" class="form-control-plaintext">-</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Label</strong></label>
+                                        <p id="previewLabel" class="form-control-plaintext">-</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Description</strong></label>
+                                        <p id="previewDescription" class="form-control-plaintext">-</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Crop Data</strong></label>
+                                        <pre id="previewCropData" class="bg-light p-2 rounded small">-</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-section">
+                                    <h5><i class="fas fa-file me-2"></i>Final Preview</h5>
+                                    
+                                    <div class="preview-container" id="finalPreviewContainer">
+                                        <div class="preview-with-crop" id="finalPreviewWrapper">
+                                            <div id="finalPreview">
+                                                <p class="text-muted">Final preview will appear here</p>
+                                            </div>
+                                            <div class="crop-preview-overlay" id="cropPreviewOverlay"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-2 text-center">
+                                        <small class="text-muted">Green area shows the selected crop region</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-back" id="prevStep3">
+                                <i class="fas fa-arrow-left me-2"></i>Previous
+                            </button>
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-2"></i>Save Sample
+                            </button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="crop_data" id="cropData">
+                </form>
+                
+                <!-- Success/Error Message -->
+                {% if message %}
+                <div class="alert alert-info alert-custom mt-4 text-center">
+                    <i class="fas fa-info-circle me-2"></i>{{ message }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+            
+            // Change icon
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-indent');
+            } else {
+                icon.classList.remove('fa-indent');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Set active menu item
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+
+        // ... (Tất cả JavaScript code từ phiên bản trước giữ nguyên)
+        // DOM Elements và toàn bộ logic JavaScript từ code trước
+        // ... (giữ nguyên toàn bộ JavaScript)
+           // DOM Elements
+      // DOM Elements
     const fileInput = document.getElementById('fileInput');
     const browseBtn = document.getElementById('browseBtn');
     const dropZone = document.getElementById('dropZone');
@@ -549,6 +965,8 @@
     const fileSize = document.getElementById('fileSize');
     const fileType = document.getElementById('fileType');
     const finalPreview = document.getElementById('finalPreview');
+    const finalPreviewWrapper = document.getElementById('finalPreviewWrapper');
+    const cropPreviewOverlay = document.getElementById('cropPreviewOverlay');
     const previewType = document.getElementById('previewType');
     const previewLabel = document.getElementById('previewLabel');
     const previewDescription = document.getElementById('previewDescription');
@@ -602,6 +1020,7 @@
     let isResizing = false;
     let dragStartX, dragStartY;
     let cropStartX, cropStartY, cropStartWidth, cropStartHeight;
+    let resizeStartX, resizeStartY;
 
     // Event Listeners
     browseBtn.addEventListener('click', () => fileInput.click());
@@ -677,9 +1096,8 @@
 
     // File handling
     function handleFileSelection() {
-      
       const file = fileInput.files[0];
-      console.log('Selected file:', file); // Kiểm tra xem file có tồn tại không
+      console.log('Selected file:', file);
       if (!file) return;
       
       currentFile = file;
@@ -837,6 +1255,114 @@
       }
     }
 
+    // NEW: Function to update crop overlay in final preview
+    function updateCropOverlay() {
+      const type = typeSelect.value;
+      cropPreviewOverlay.innerHTML = '';
+      
+      if (type === 'image') {
+        const img = finalPreview.querySelector('img');
+        if (!img) return;
+        
+        // Wait for image to load
+        img.onload = function() {
+          const imgRect = img.getBoundingClientRect();
+          const containerRect = finalPreviewWrapper.getBoundingClientRect();
+          
+          // Calculate scale factors
+          const scaleX = imgRect.width / img.naturalWidth;
+          const scaleY = imgRect.height / img.naturalHeight;
+          
+          // Calculate crop area position and size
+          const cropX = cropData.x * scaleX;
+          const cropY = cropData.y * scaleY;
+          const cropWidth = cropData.width * scaleX;
+          const cropHeight = cropData.height * scaleY;
+          
+          // Create crop overlay
+          const cropOverlay = document.createElement('div');
+          cropOverlay.className = 'crop-preview-area';
+          cropOverlay.style.left = cropX + 'px';
+          cropOverlay.style.top = cropY + 'px';
+          cropOverlay.style.width = cropWidth + 'px';
+          cropOverlay.style.height = cropHeight + 'px';
+          
+          // Create info label
+          const infoLabel = document.createElement('div');
+          infoLabel.className = 'crop-preview-info';
+          infoLabel.textContent = `${cropData.width} × ${cropData.height}`;
+          infoLabel.style.left = cropX + 'px';
+          infoLabel.style.top = (cropY - 25) + 'px';
+          
+          cropPreviewOverlay.appendChild(cropOverlay);
+          cropPreviewOverlay.appendChild(infoLabel);
+          
+          // Dim the area outside crop
+          img.classList.add('preview-dimmed');
+        };
+        
+        // Trigger load if image is already loaded
+        if (img.complete) {
+          img.onload();
+        }
+        
+      } else if (type === 'video') {
+        const video = finalPreview.querySelector('video');
+        if (!video) return;
+        
+        video.onloadedmetadata = function() {
+          const videoRect = video.getBoundingClientRect();
+          const containerRect = finalPreviewWrapper.getBoundingClientRect();
+          
+          // Calculate scale factors
+          const scaleX = videoRect.width / video.videoWidth;
+          const scaleY = videoRect.height / video.videoHeight;
+          
+          if (isCroppingVideo) {
+            // Calculate crop area position and size
+            const cropX = cropData.x * scaleX;
+            const cropY = cropData.y * scaleY;
+            const cropWidth = cropData.width * scaleX;
+            const cropHeight = cropData.height * scaleY;
+            
+            // Create crop overlay
+            const cropOverlay = document.createElement('div');
+            cropOverlay.className = 'crop-preview-area';
+            cropOverlay.style.left = cropX + 'px';
+            cropOverlay.style.top = cropY + 'px';
+            cropOverlay.style.width = cropWidth + 'px';
+            cropOverlay.style.height = cropHeight + 'px';
+            
+            // Create info label
+            const infoLabel = document.createElement('div');
+            infoLabel.className = 'crop-preview-info';
+            infoLabel.textContent = `${cropData.width} × ${cropData.height}`;
+            infoLabel.style.left = cropX + 'px';
+            infoLabel.style.top = (cropY - 25) + 'px';
+            
+            cropPreviewOverlay.appendChild(cropOverlay);
+            cropPreviewOverlay.appendChild(infoLabel);
+            
+            // Dim the area outside crop
+            video.classList.add('preview-dimmed');
+          }
+          
+          // Add trim info
+          const trimInfo = document.createElement('div');
+          trimInfo.className = 'crop-preview-info';
+          trimInfo.style.top = '10px';
+          trimInfo.style.left = '10px';
+          trimInfo.textContent = `Trim: ${cropData.start.toFixed(1)}s - ${cropData.end.toFixed(1)}s`;
+          cropPreviewOverlay.appendChild(trimInfo);
+        };
+        
+        // Trigger load if video metadata is already loaded
+        if (video.readyState >= 1) {
+          video.onloadedmetadata();
+        }
+      }
+    }
+
     // Initialize video crop functionality
     function initVideoCrop() {
       if (!currentVideo) return;
@@ -942,18 +1468,18 @@
 
       const rect = cropArea.getBoundingClientRect();
       const containerRect = previewContainer.getBoundingClientRect();
-       // Ghi lại vị trí crop tương đối trong container
+      
+      // Ghi lại vị trí crop tương đối trong container
       cropStartX = rect.left - containerRect.left;
       cropStartY = rect.top - containerRect.top;
       cropStartWidth = rect.width;
       cropStartHeight = rect.height;
 
-      // 🟢 Ghi lại vị trí chuột ban đầu
+      // Ghi lại vị trí chuột ban đầu
       const clientX = e.clientX || (e.touches && e.touches[0].clientX);
       const clientY = e.clientY || (e.touches && e.touches[0].clientY);
       resizeStartX = clientX - containerRect.left;
       resizeStartY = clientY - containerRect.top;
-
         
       this.setAttribute('data-resize', this.className.includes('nw') ? 'nw' : 
                        this.className.includes('ne') ? 'ne' :
@@ -998,9 +1524,8 @@
         const handleType = document.querySelector('.crop-handle[data-resize]').getAttribute('data-resize');
         const containerRect = previewContainer.getBoundingClientRect();
         const videoRect = currentVideo.getBoundingClientRect();
-        
 
-        // ❗ Tính toạ độ chuột tương đối trong container
+        // Tính toạ độ chuột tương đối trong container
         const clientX = e.clientX || (e.touches && e.touches[0].clientX);
         const clientY = e.clientY || (e.touches && e.touches[0].clientY);
         const relativeX = clientX - containerRect.left;
@@ -1010,8 +1535,6 @@
         let newWidth = cropStartWidth;
         let newHeight = cropStartHeight;
         
-        // const deltaX = clientX - cropStartX;
-        // const deltaY = clientY - cropStartY;
         const deltaX = relativeX - resizeStartX;
         const deltaY = relativeY - resizeStartY;
         
@@ -1275,24 +1798,21 @@
       if (formData.get('type') === 'image') {
         const img = document.createElement('img');
         img.src = currentFileUrl;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '400px';
         finalPreview.appendChild(img);
-        finalPreview.innerHTML += `
-          <div class="mt-2 text-center">
-            <small class="text-muted">Crop: ${cropData.width} x ${cropData.height}</small>
-          </div>
-        `;
+        
       } else {
         const video = document.createElement('video');
         video.src = currentFileUrl;
         video.controls = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '400px';
         finalPreview.appendChild(video);
-        finalPreview.innerHTML += `
-          <div class="mt-2 text-center">
-            <small class="text-muted">Trim: ${cropData.start.toFixed(1)}s - ${cropData.end.toFixed(1)}s</small>
-            ${isCroppingVideo ? `<br><small class="text-muted">Crop: ${cropData.width} x ${cropData.height}</small>` : ''}
-          </div>
-        `;
       }
+      
+      // Update crop overlay
+      setTimeout(updateCropOverlay, 100);
     }
 
     // Format file size
@@ -1393,8 +1913,8 @@
       // Set up step navigation
       step1.classList.add('active');
     });
-  </script>
+    </script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

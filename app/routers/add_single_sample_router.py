@@ -18,7 +18,8 @@ class AddSingleSampleRouter:
         self.router.add_api_route("/add_single_sample", self.add_single_sample, methods=["POST"])
 
     async def add_single_sample_page(self, request: Request):
-        return templates.TemplateResponse("add_single_sample.html", {"request": request})
+        username = request.cookies.get("username")  # lấy từ cookie
+        return templates.TemplateResponse("add_single_sample.html", {"request": request, "username": username})
 
     async def add_single_sample(
         self, 

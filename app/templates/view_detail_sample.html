@@ -91,6 +91,11 @@
             width: 24px;
             text-align: center;
         }
+        .left-section {
+            display: flex;
+            align-items: center;  /* căn cùng hàng ngang */
+            gap: 20px;            /* khoảng cách giữa nút và chữ */
+        }
         
         #sidebar.collapsed .menu-item span {
             display: none;
@@ -423,6 +428,7 @@
                 flex: none;
             }
             
+            
             .action-buttons {
                 flex-direction: column;
             }
@@ -433,7 +439,7 @@
     <!-- Sidebar -->
     <div id="sidebar">
         <div class="sidebar-header">
-            <img src="/static/images/logo.png" alt="Logo" class="logo">
+            <img src="/static/images/facial-recognition.png" alt="Logo" class="logo">
             <h3>Admin System</h3>
             <p class="mb-0">Management Portal</p>
         </div>
@@ -478,9 +484,13 @@
     <div id="content">
         <!-- Top Navbar -->
         <div class="top-navbar">
-            <button class="toggle-sidebar" id="toggleSidebar">
-                <i class="fas fa-bars"></i>
-            </button>
+            <div class="left-section">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                        <h3 class="page-title"><i class="fas fa-vial me-2"></i>Sample Details</h3>
+            </div>
+            
             
             <div class="user-info">
                 <div class="user-avatar">
@@ -496,9 +506,9 @@
         <!-- Main Content Area -->
         <div class="main-content">
             <!-- Page Header -->
-            <div class="page-header">
+            <!-- <div class="page-header">
                 <h1 class="page-title"><i class="fas fa-vial me-2"></i>Sample Details</h1>
-            </div>
+            </div> -->
             
             <!-- Sample Detail Card -->
             <div class="sample-detail-card">

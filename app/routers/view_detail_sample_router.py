@@ -17,7 +17,8 @@ class ViewDetailSampleRouter:
     async def view_sample_page(self, request: Request, sample_id: int, db: Session = Depends(get_db)):
         service = SampleService(db)
         sample = service.get_sample(sample_id)
-        return templates.TemplateResponse("view_detail_sample.html", {"request": request, "sample": sample})
+        username = request.cookies.get("username")  # lấy từ cookie
+        return templates.TemplateResponse("view_detail_sample.html", {"request": request, "sample": sample,"username" :username})
 
     async def update_sample(
         self, 
