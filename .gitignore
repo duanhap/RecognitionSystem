@@ -2,7 +2,9 @@
 __pycache__/
 *.pyc
 app/dataset
+app/dataset2
 app/models
+app/models2
 app/static/heatmaps
 app/uploads
 app/modelsystem

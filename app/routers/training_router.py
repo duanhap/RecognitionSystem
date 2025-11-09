@@ -186,10 +186,8 @@ class TrainingRouter:
         """Hiển thị lịch sử training trong dialog"""
         service = TrainingService(db)
         
-        # Lấy tất cả kết quả training và nhóm theo model_path
         all_results = service.get_history_results()
         
-        # Nhóm kết quả theo model_path để tính tổng hợp
         training_sessions = {}
         
         for result in all_results:
@@ -217,7 +215,6 @@ class TrainingRouter:
                 session["avg_recall"] = sum(r.rec for r in session["results"]) / len(session["results"])
                 session["avg_f1"] = sum(r.f1 for r in session["results"]) / len(session["results"])
         
-        # Chuyển thành list và sắp xếp theo thời gian
         history_list = sorted(
             training_sessions.values(), 
             key=lambda x: x["created_at"], 
@@ -229,7 +226,7 @@ class TrainingRouter:
             {
                 "request": request,
                 "training_history": history_list,
-                "show_history": True  # Flag để hiển thị dialog
+                "show_history": True 
             }
         )
 

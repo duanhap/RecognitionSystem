@@ -1,0 +1,194 @@
+<!-- app/templates/identity_verification.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identity Verification Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --dark-blue: #0a1f33;
+            --accent-blue: #2c5282;
+            --light-blue: #4a90e2;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 280px;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+        
+        .action-buttons {
+            margin-bottom: 2rem;
+        }
+        
+        .sample-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .sample-preview {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar (giống home.html) -->
+    <div class="sidebar">
+        <div class="sidebar-header text-center p-3 border-bottom">
+            <h4>Admin System</h4>
+            <p class="mb-0">Management Portal</p>
+        </div>
+        <div class="sidebar-menu p-3">
+            <a href="/" class="d-block text-white text-decoration-none p-2 mb-1">
+                <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+            <a href="/identity-verification" class="d-block text-white text-decoration-none p-2 mb-1 active">
+                <i class="fas fa-fingerprint me-2"></i>Identity Verification
+            </a>
+            <a href="/manage_samples" class="d-block text-white text-decoration-none p-2 mb-1">
+                <i class="fas fa-vial me-2"></i>Detect Fake/Real
+            </a>
+            <!-- Thêm các menu khác -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-fingerprint me-2"></i>Identity Verification</h1>
+            <div class="user-info d-flex align-items-center">
+                <div class="user-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    {{ username[0]|upper if username else 'U' }}
+                </div>
+                <span>{{ username }}</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/identity-verification/add-label" class="btn btn-primary me-2">
+                <i class="fas fa-tag me-1"></i> Add Label
+            </a>
+            <a href="/identity-verification/add-sample" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i> Add Sample
+            </a>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="search" class="form-control" placeholder="Search by label " value="{{ search or '' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">Search</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/identity-verification" class="btn btn-outline-secondary w-100">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Samples Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Identity Samples (Dataset2)</h5>
+            </div>
+            <div class="card-body">
+                {% if samples %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Label</th>
+                                <th>Description</th>
+                                <th>File</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sample in samples %}
+                            <tr>
+                                <td>{{ sample.id }}</td>
+                                <td>
+                                    <span class="badge {% if sample.type == 'image' %}bg-success{% else %}bg-info{% endif %}">
+                                        {{ sample.type }}
+                                    </span>
+                                </td>
+                                <td>{{ sample.label }}</td>
+                                <td>{{ sample.description or '-' }}</td>
+                                <td>
+                                    {% if sample.type == 'image' %}
+                                        <img src="/{{ sample.file_path }}" alt="Preview" class="sample-preview">
+                                    {% else %}
+                                        <video class="sample-preview" controls>
+                                            <source src="/{{ sample.file_path }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    {% endif %}
+                                </td>
+                                <td>{{ sample.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="/identity-verification/delete/{{ sample.id }}" class="btn btn-danger btn-sm" 
+                                       onclick="return confirm('Are you sure you want to delete this sample?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {% if p == page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}">{{ p }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No identity samples found.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if request.cookies.get("upload_message") %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ request.cookies.get("upload_message") }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

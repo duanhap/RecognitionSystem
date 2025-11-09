@@ -13,11 +13,7 @@ class SampleRepository:
         return self.db.query(TrainingSample).filter(TrainingSample.id == sample_id).first()
     
     def get_sample_by_file_path(self, file_path: str):
-        """Tìm sample bằng file_path - dùng LIKE để tìm phần cuối"""
-        # Lấy tên file từ đường dẫn (phần cuối cùng)
         filename = os.path.basename(file_path)
-        
-        # Tìm sample có file_path kết thúc bằng filename này
         return self.db.query(TrainingSample).filter(
             TrainingSample.file_path.like(f'%{filename}')
         ).first()
@@ -34,7 +30,6 @@ class SampleRepository:
         return query.count()
 
     def add_sample(self, type: str, label: str, description: str, file: UploadFile, user_id: int,crop_info: dict = None) -> TrainingSample:
-        # Nếu có crop_info, xử lý crop ở đây (giả sử crop_info chứa tọa độ crop)
         #Lưu file tạm
         temp_path = save_temp_file(file)
         # --- 1. Tạo đường dẫn thư mục dựa theo loại file và nhãn ---
@@ -65,7 +60,7 @@ class SampleRepository:
             type=type,
             label=label,
             description=description,
-            file_path=rel_path,  # lưu đường dẫn tuyệt đối hoặc tương đối đều được
+            file_path=rel_path, 
             user_id=user_id
         )
         self.db.add(sample)

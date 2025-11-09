@@ -63,10 +63,24 @@ class Settings:
         "img_size": (299, 299),
         "default_dataset_root": "dataset/video"
     }
+    IDENTITY_CONFIG = {
+        "model_type": "facenet",  
+        "embedding_dim": 512,
+        "frame_interval": 10,
+        "max_frames_per_video": 10,
+        "video_pooling": "mean",  # "mean", "max", "median"
+        "train_ratio": 0.8,
+        "batch_size": 32,
+        "epochs": 20,
+        "learning_rate": 1e-4,
+        "patience": 5,
+        "default_dataset_root": "dataset2"
+    }
      # Training Output
     TRAINING_OUTPUT_DIRS = {
         "image": BASE_DIR / "models/image",
         "video": BASE_DIR / "models/video",
+        "identity": BASE_DIR / "models2",
         "extracted_frames": BASE_DIR / "extracted_frames"
     }
 

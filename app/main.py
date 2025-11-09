@@ -18,6 +18,7 @@ from app.routers.view_feedback_router import feedback_router
 from app.routers.manage_test_result_router import manage_test_result_router
 from app.routers.view_detail_result_router import view_detail_result_router
 from app.routers.training_config_router import training_config_router
+from app.routers.identity_verification_router import identity_verification_router
 from .routers import  predict_router
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -29,6 +30,8 @@ app = FastAPI()
 # Mount thư mục static
 app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 app.mount("/uploads", StaticFiles(directory="app/dataset"), name="uploads")
+# Thêm static files cho dataset2
+app.mount("/dataset2", StaticFiles(directory="app/dataset2"), name="dataset2")
 # ✅ Thêm SessionMiddleware
 app.add_middleware(SessionMiddleware, secret_key="my_super_secret_key")
 app.include_router(login_router)
@@ -43,7 +46,7 @@ app.include_router(feedback_router)
 app.include_router(manage_test_result_router)
 app.include_router(view_detail_result_router)
 app.include_router(training_config_router)
-
+app.include_router(identity_verification_router)
 app.include_router(predict_router.router)
 app.include_router(training_router)
 
@@ -54,7 +57,7 @@ async def startup_event():
     logger.info("🚀 Starting Deepfake Detection API...")
     model_loader.load_models()
     
-    # ✅ Load training config từ file (cách đơn giản)
+    # Load training config từ file (cách đơn giản)
     try:
         from app.routers.training_config_router import TrainingConfigRouter
         config_handler = TrainingConfigRouter()

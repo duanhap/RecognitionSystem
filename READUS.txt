@@ -13,7 +13,9 @@
         |   |    |    ├── fake 
         |   |    |    └── real
         |   |    └──image (tương tự)
-        |   |    
+        |   ├── dataset2 ( dành cho xác nhận danh tính)
+        |   |    ├── video  
+        |   |    └──image 
         │   ├── continue_train_video.py           
         │   ├── core/              # config, kết nối DB
         │   │   ├── __init__.py
@@ -94,3 +96,6 @@ python train_video.py --dataset_root dataset/video --n_samples 1000 --sampling_m
 ✅ Flexible CLI: Nhiều tùy chọn command line
 python continue_train_video.py --model_path "models/video/20251102_093809_Xception_video/model_final.h5" --n_samples 20 --sampling_mode random --depth normal --train_ratio 0.8
 python continue_train_video.py --model_path models/video/20241201_143000_Xception_video/model_final.h5 --n_samples 500 --sampling_mode random --depth deep --train_ratio 0.8 --force_extract --pooling_strategy max
+
+python train_identity_verification.py
+python continue_training_identity.py --model_path "models2/20241201_120000_identity_verification/model_final.h5"

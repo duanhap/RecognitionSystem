@@ -26,6 +26,8 @@ class ManageTestResultRouter:
         
         # Tính điểm trung bình
         avg_confidence = service.average_confidence(results)
+        username = request.cookies.get("username")  # lấy từ cookie
+
         
         # Thống kê tổng số uploads
         total_uploads = len(results)
@@ -35,7 +37,8 @@ class ManageTestResultRouter:
             "results": results,
             "search": search,
             "average_confidence": avg_confidence,
-            "total_uploads": total_uploads
+            "total_uploads": total_uploads,
+            "username" : username
         })
 
 # Export instance

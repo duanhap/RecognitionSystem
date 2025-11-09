@@ -30,29 +30,26 @@ class SampleService:
     def _move_sample_file(self, sample_id: int, old_file_path: str, old_label: str, new_label: str, file_type: str):
         """Di chuyển file sample từ thư mục cũ sang thư mục mới khi label thay đổi"""
         try:
-            # Lấy đường dẫn base dataset
+
             base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dataset")
             
-            # Đường dẫn file cũ (tuyệt đối)
+
             old_abs_path = os.path.join(base_dir, old_file_path)
             
             if not os.path.exists(old_abs_path):
                 print(f"File không tồn tại: {old_abs_path}")
                 return
                 
-            # Tạo đường dẫn mới
+
             filename = os.path.basename(old_file_path)
             new_rel_path = os.path.join(file_type, new_label, filename)
             new_abs_path = os.path.join(base_dir, new_rel_path)
-            
-            # Tạo thư mục đích nếu chưa tồn tại
+
             os.makedirs(os.path.dirname(new_abs_path), exist_ok=True)
-            
-            # Di chuyển file
+
             shutil.move(old_abs_path, new_abs_path)
             print(f"✅ Đã di chuyển file: {old_abs_path} -> {new_abs_path}")
             
-            # Cập nhật file_path trong CSDL
             self.sample_repo.update_file_path(sample_id, new_rel_path)
             
         except Exception as e:

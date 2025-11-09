@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from app.model.media import Media
 from datetime import datetime
 from app.core.database import database
+from app.model.identity import Identity
 
 class AnalysisResult(database.Base):
     __tablename__ = "tblAnalysisResult"
@@ -19,6 +20,9 @@ class AnalysisResult(database.Base):
 
     # Quan hệ với Feedback
     feedback= relationship("Feedback", back_populates="analysis_result",uselist=False)
+
+    identity_id = Column(Integer, ForeignKey("tblIdentity.id"), nullable=True)
+    identity = relationship("Identity", back_populates="analysis_results")
 
     def to_dict(self):
         return {

@@ -1,481 +1,953 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Training Module</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Module - Admin Dashboard</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --dark-blue: #0a1f33;
+            --accent-blue: #2c5282;
+            --light-blue: #4a90e2;
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-header .logo {
+            height: 40px;
+            margin-bottom: 0.5rem;
+        }
+        
+        #sidebar.collapsed .sidebar-header h3,
+        #sidebar.collapsed .sidebar-header p {
+            display: none;
+        }
+        
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--light-blue);
+        }
+        
+        .menu-item i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        #sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        #sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+        
+        /* Main Content Styles */
+        #content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+        
+        #content.expanded {
+            margin-left: var(--sidebar-collapsed);
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        /* Training Page Styles */
+        .training-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .training-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+        
+        .training-header h1 {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .training-header p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--light-blue);
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+        
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .input-group .form-select {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .btn-action {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #545b62);
+            color: white;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--light-blue);
+            color: var(--light-blue);
+            background: transparent;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--light-blue);
+            color: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .training-progress {
+            margin-top: 2rem;
+        }
+        
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            border-radius: 5px;
+        }
+        
+        .results-section {
+            margin-top: 2rem;
+        }
+        
+        .results-table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .results-table th {
+            background: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        
+        .results-table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+        
+        .badge {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+        }
+        
+        .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            background: var(--primary-blue);
+            color: white;
+            border-bottom: none;
+            padding: 1.5rem;
+        }
+        
+        .modal-title {
+            font-weight: 700;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #eee;
+            padding: 1rem 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: var(--sidebar-collapsed);
+            }
+            
+            #sidebar.collapsed {
+                width: 0;
+            }
+            
+            #content {
+                margin-left: var(--sidebar-collapsed);
+            }
+            
+            #content.expanded {
+                margin-left: 0;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-buttons .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
-<body class="bg-light">
-
-<div class="container mt-5">
-  <div class="card shadow p-4">
-    <h2 class="mb-4 text-center text-primary">Model Training Dashboard</h2>
-
-    <!-- Training Options -->
-    <form id="trainingForm" method="post" action="/train/start" enctype="multipart/form-data">
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="form-label">Training Type</label>
-          <select class="form-select" name="train_type" id="trainType" required>
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-          </select>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/images/facial-recognition.png" alt="Logo" class="logo">
+            <h3>Admin System</h3>
+            <p class="mb-0">Management Portal</p>
         </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Number of Samples</label>
-          <div class="input-group">
-            <input type="number" class="form-control" name="num_samples" placeholder="e.g. 1000" required>
-            <select class="form-select" name="sample_mode" style="max-width: 150px;">
-              <option value="random">Random</option>
-              <option value="newest">Newest</option>
-            </select>
-          </div>
+        
+        <div class="sidebar-menu">
+            <a href="/home" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/manage_samples" class="menu-item">
+                <i class="fas fa-vial"></i>
+                <span>Manage Samples</span>
+            </a>
+            <a href="/manage_user" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="/train" class="menu-item active">
+                <i class="fas fa-brain"></i>
+                <span>Training</span>
+            </a>
+            <a href="/manage-test-results" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Test Results</span>
+            </a>
+            <a href="/view_feedback" class="menu-item">
+                <i class="fas fa-comments"></i>
+                <span>Feedback</span>
+            </a>
+            <a href="/training-config" class="menu-item">
+                <i class="fas fa-cogs"></i>
+                <span>System Settings</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
         </div>
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="form-label">Training Depth</label>
-          <select class="form-select" name="train_depth" required>
-            <option value="normal">Normal (epochs=10, patience=3)</option>
-            <option value="deep">Deep (epochs=20, patience=5)</option>
-            <option value="superdeep">Super Deep (epochs=30, patience=7)</option>
-          </select>
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Mode</label>
-          <select class="form-select" name="train_mode" id="trainMode" required>
-            <option value="from_scratch">Train from Scratch</option>
-            <option value="resume">Resume Training</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Resume model list -->
-      <div class="row mb-3 d-none" id="resumeSection">
-        <div class="col-md-12">
-          <label class="form-label">Select Existing Model to Resume</label>
-          <select class="form-select" name="resume_model" id="resumeModelSelect">
-            <option value="">-- Loading models... --</option>
-          </select>
-          <div class="form-text" id="modelCountText">No models found</div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="text-center mb-4">
-        <button type="button" class="btn btn-outline-primary px-4" onclick="viewHistory()">View History Results</button>        <button type="submit" class="btn btn-success px-4" id="startButton">Start Training</button>
-        <button type="button" class="btn btn-danger px-4" onclick="stopTraining()">Stop</button>
-      </div>
-    </form>
-
-    <!-- Simple Loading Progress -->
-    <div id="trainingProgress" class="mt-4 d-none">
-        <div class="alert alert-info text-center">
-            <h5>Training in progress... <span id="trainingStatus" class="badge bg-warning">Running</span></h5>
-            <div class="progress my-3">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Top Navbar -->
+        <div class="top-navbar">
+            <button class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ username|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ username }}</strong>
+                    <div class="text-muted" style="font-size: 0.85rem;">Administrator</div>
+                </div>
             </div>
-            <p class="mb-0">Please wait while training completes. This may take several minutes.</p>
         </div>
-    </div>
-
-    <!-- Results Section -->
-    <div class="mt-5">
-      <h4 class="mb-3 text-secondary">Training Results</h4>
-      <table class="table table-bordered">
-        <thead class="table-light">
-          <tr>
-            <th>Accuracy</th>
-            <th>Precision</th>
-            <th>Recall</th>
-            <th>F1 Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              {% if result and result.accuracy is defined %}
-                {{ "%.4f"|format(result.accuracy) }}
-              {% else %}
-                --
-              {% endif %}
-            </td>
-            <td>
-              {% if result and result.precision is defined %}
-                {{ "%.4f"|format(result.precision) }}
-              {% else %}
-                --
-              {% endif %}
-            </td>
-            <td>
-              {% if result and result.recall is defined %}
-                {{ "%.4f"|format(result.recall) }}
-              {% else %}
-                --
-              {% endif %}
-            </td>
-            <td>
-              {% if result and result.f1 is defined %}
-                {{ "%.4f"|format(result.f1) }}
-              {% else %}
-                --
-              {% endif %}
-            </td>
-
-          </tr>
-        </tbody>
-      </table>
-      <!-- Message Alert -->
-      <div id="messageAlert" class="mt-3">
-          {% if message %}
-          <div class="alert alert-info alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-          {% endif %}
-      </div>
-      
-      <!-- Saved Count -->
-      {% if result and result.saved_count is defined %}
-      <div class="alert alert-success">
-        <strong>Success!</strong> Saved {{ result.saved_count }} out of {{ result.total_samples }} training results.
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Save/Discard -->
-    <div class="d-flex justify-content-center gap-3 mt-3">
-      <button class="btn btn-primary" onclick="saveTraining()">Save Result</button>
-      <button class="btn btn-secondary" onclick="cancelTraining()">Discard</button>
-    </div>
-
-  </div>
-</div>
-<!-- Training History Modal -->
-<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="historyModalLabel">
-          <i class="fas fa-history me-2"></i>Training History
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        {% if training_history and show_history %}
-        <div class="table-responsive">
-          <table class="table table-hover table-sm">
-            <thead class="table-light">
-              <tr>
-                <th>#</th>
-                <th>Training Date</th>
-                <th>Model Path</th>
-                <th>Samples</th>
-                <th>Avg Accuracy</th>
-                <th>Avg Precision</th>
-                <th>Avg Recall</th>
-                <th>Avg F1 Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for session in training_history %}
-              <tr>
-                <td>{{ loop.index }}</td>
-                <td>
-                  <small>{{ session.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-                </td>
-                <td>
-                  <small class="text-muted font-monospace">
-                    {{ session.model_path|default('N/A') }}
-                  </small>
-                </td>
-                <td>
-                  <span class="badge bg-info">
-                    {{ session.sample_count }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge bg-success">
-                    {{ "%.4f"|format(session.avg_accuracy) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge bg-warning text-dark">
-                    {{ "%.4f"|format(session.avg_precision) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge bg-primary">
-                    {{ "%.4f"|format(session.avg_recall) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge bg-danger">
-                    {{ "%.4f"|format(session.avg_f1) }}
-                  </span>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="text-center py-4">
-          <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
-          <p class="text-muted">No training history found.</p>
-        </div>
-        {% endif %}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-// Load available models khi trang được tải
-document.addEventListener('DOMContentLoaded', function() {
-    loadAvailableModels();
-    
-    // Thêm event listener cho train type và train mode
-    document.getElementById('trainType').addEventListener('change', loadAvailableModels);
-    document.getElementById('trainMode').addEventListener('change', toggleResumeSection);
-    
-    // Khởi tạo trạng thái ban đầu
-    toggleResumeSection();
-});
-// View training history
-async function viewHistory() {
-    try {
-        const response = await fetch('/train/history');
-        const html = await response.text();
         
-        // Cập nhật nội dung trang với history modal
-        document.documentElement.innerHTML = html;
-        
-        // Hiển thị modal
-        const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
-        historyModal.show();
-        
-    } catch (error) {
-        console.error('Error loading history:', error);
-        alert('Error loading training history: ' + error.message);
-    }
-}
-// Load danh sách model có sẵn
-async function loadAvailableModels() {
-    const trainType = document.getElementById('trainType').value;
-    const resumeSelect = document.getElementById('resumeModelSelect');
-    const modelCountText = document.getElementById('modelCountText');
-    
-    try {
-        const response = await fetch('/train/available-models');
-        const data = await response.json();
-        
-        const models = data[trainType] || [];
-        
-        // Clear existing options
-        resumeSelect.innerHTML = '<option value="">-- Select Model --</option>';
-        
-        // Add model options
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.name;  // Gửi tên folder (ví dụ: 20251102_093809_Xception)
-            option.textContent = model.name;
-            option.title = model.path;  // Hiển thị full path khi hover
-            resumeSelect.appendChild(option);
-        });
-        
-        // Update model count text
-        modelCountText.textContent = `Found ${models.length} ${trainType} models`;
-        modelCountText.className = models.length > 0 ? 'form-text text-success' : 'form-text text-warning';
-        
-    } catch (error) {
-        console.error('Error loading models:', error);
-        resumeSelect.innerHTML = '<option value="">-- Error loading models --</option>';
-        modelCountText.textContent = 'Error loading models';
-        modelCountText.className = 'form-text text-danger';
-    }
-}
-// Toggle resume section
-function toggleResumeSection() {
-    const trainMode = document.getElementById('trainMode');
-    const resumeSection = document.getElementById('resumeSection');
-    
-    if (trainMode.value === 'resume') {
-        resumeSection.classList.remove('d-none');
-        // Load models khi chuyển sang resume mode
-        loadAvailableModels();
-    } else {
-        resumeSection.classList.add('d-none');
-    }
-}
-// Form submission
-document.getElementById('trainingForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-     // Validate resume model selection
-    const trainMode = document.getElementById('trainMode').value;
-    const resumeModel = document.getElementById('resumeModelSelect').value;
-    
-    if (trainMode === 'resume' && !resumeModel) {
-        alert('Please select a model to resume training from');
-        return;
-    }
-    startTraining();
-});
-
-async function startTraining() {
-    const progressDiv = document.getElementById('trainingProgress');
-    const startButton = document.getElementById('startButton');
-    
-    // Hiển thị progress và disable start button
-    progressDiv.classList.remove('d-none');
-    startButton.disabled = true;
-    startButton.textContent = 'Starting...';
-    
-    // Submit form
-    const formData = new FormData(document.getElementById('trainingForm'));
-    
-    try {
-        const response = await fetch('/train/start', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            const html = await response.text();
-            document.documentElement.innerHTML = html;
-        } else {
-            throw new Error('Failed to start training');
-        }
-    } catch (error) {
-        console.error('Error starting training:', error);
-        alert('Error starting training: ' + error.message);
-        startButton.disabled = false;
-        startButton.textContent = 'Start Training';
-        progressDiv.classList.add('d-none');
-    }
-}
-
-// Stop training
-async function stopTraining() {
-    if (!confirm('Are you sure you want to stop training? Current progress will be saved.')) return;
-    
-    try {
-        const stopBtn = document.querySelector('button[onclick="stopTraining()"]');
-        const originalText = stopBtn.textContent;
-        stopBtn.textContent = 'Stopping...';
-        stopBtn.disabled = true;
-        
-        const response = await fetch('/train/stop', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (response.ok) {
-            document.getElementById('trainingStatus').textContent = 'Stopping...';
-            document.getElementById('trainingStatus').className = 'badge bg-warning';
-            
-            // Kiểm tra trạng thái sau mỗi 2 giây
-            const checkInterval = setInterval(async () => {
-                const statusResponse = await fetch('/train/status');
-                const status = await statusResponse.json();
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="training-card">
+                <div class="training-header">
+                    <h1>Model Training Dashboard <i class="fas fa-brain"></i></h1>
+                    <p>Configure and manage AI model training processes</p>
+                </div>
                 
-                if (!status.is_running && !status.has_process) {
-                    clearInterval(checkInterval);
-                    document.getElementById('trainingStatus').textContent = 'Stopped';
-                    document.getElementById('trainingStatus').className = 'badge bg-danger';
-                    
-                    // Hiển thị thông báo và reload sau 3 giây
-                    setTimeout(() => {
-                        alert('Training stopped successfully!');
-                        location.reload();
-                    }, 1000);
-                }
-            }, 2000);
-            
-            // Timeout sau 10 giây
-            setTimeout(() => {
-                clearInterval(checkInterval);
-                alert('Training stop command sent. Page will reload.');
-                location.reload();
-            }, 10000);
-            
-        }
-    } catch (error) {
-        console.error('Error stopping training:', error);
-        alert('Error stopping training: ' + error.message);
-        
-        // Reset button state
-        const stopBtn = document.querySelector('button[onclick="stopTraining()"]');
-        stopBtn.textContent = 'Stop';
-        stopBtn.disabled = false;
-    }
-}
+                <!-- Training Options -->
+                <form id="trainingForm" method="post" action="/train/start" enctype="multipart/form-data">
+                    <div class="form-section">
+                        <h4>Training Configuration</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Training Type</label>
+                                <select class="form-select" name="train_type" id="trainType" required>
+                                    <option value="image">Image</option>
+                                    <option value="video">Video</option>
+                                </select>
+                            </div>
 
-async function saveTraining() {
-    try {
-        const response = await fetch('/train/save', { 
-            method: 'POST'
-            // KHÔNG thêm headers để server trả về HTML
-        });
-        
-        // Nhận HTML response và cập nhật trang
-        const html = await response.text();
-        document.documentElement.innerHTML = html;
-        
-        // Hiển thị thông báo từ message (nếu có)
-        // Message sẽ được hiển thị trong HTML template
-        
-    } catch (error) {
-        console.error('Error saving model:', error);
-        alert('Error saving model: ' + error.message);
-    }
-}
-// Cancel training - Discard
-async function cancelTraining() {
-    if (!confirm('Are you sure you want to discard this training result?')) return;
+                            <div class="col-md-6">
+                                <label class="form-label">Number of Samples</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="num_samples" placeholder="e.g. 1000" required>
+                                    <select class="form-select" name="sample_mode" style="max-width: 150px;">
+                                        <option value="random">Random</option>
+                                        <option value="newest">Newest</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Training Depth</label>
+                                <select class="form-select" name="train_depth" required>
+                                    <option value="normal">Normal (epochs=10, patience=3)</option>
+                                    <option value="deep">Deep (epochs=20, patience=5)</option>
+                                    <option value="superdeep">Super Deep (epochs=30, patience=7)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Mode</label>
+                                <select class="form-select" name="train_mode" id="trainMode" required>
+                                    <option value="from_scratch">Train from Scratch</option>
+                                    <option value="resume">Resume Training</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Resume model list -->
+                        <div class="row mb-3 d-none" id="resumeSection">
+                            <div class="col-md-12">
+                                <label class="form-label">Select Existing Model to Resume</label>
+                                <select class="form-select" name="resume_model" id="resumeModelSelect">
+                                    <option value="">-- Loading models... --</option>
+                                </select>
+                                <div class="form-text" id="modelCountText">No models found</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-outline-primary px-4" onclick="viewHistory()">
+                            <i class="fas fa-history me-2"></i>View History Results
+                        </button>
+                        <button type="submit" class="btn btn-success px-4" id="startButton">
+                            <i class="fas fa-play-circle me-2"></i>Start Training
+                        </button>
+                        <button type="button" class="btn btn-danger px-4" onclick="stopTraining()">
+                            <i class="fas fa-stop-circle me-2"></i>Stop
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Simple Loading Progress -->
+                <div id="trainingProgress" class="training-progress d-none">
+                    <div class="alert alert-info">
+                        <h5 class="mb-3">Training in progress... <span id="trainingStatus" class="badge bg-warning">Running</span></h5>
+                        <div class="progress my-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                        </div>
+                        <p class="mb-0">Please wait while training completes. This may take several minutes.</p>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section">
+                    <h4 class="mb-3 text-secondary">Training Results</h4>
+                    <table class="table table-bordered results-table">
+                        <thead>
+                            <tr>
+                                <th>Accuracy</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1 Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {% if result and result.accuracy is defined %}
+                                        {{ "%.4f"|format(result.accuracy) }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result and result.precision is defined %}
+                                        {{ "%.4f"|format(result.precision) }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result and result.recall is defined %}
+                                        {{ "%.4f"|format(result.recall) }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result and result.f1 is defined %}
+                                        {{ "%.4f"|format(result.f1) }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Message Alert -->
+                    <div id="messageAlert" class="mt-3">
+                        {% if message %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Saved Count -->
+                    {% if result and result.saved_count is defined %}
+                    <div class="alert alert-success">
+                        <strong>Success!</strong> Saved {{ result.saved_count }} out of {{ result.total_samples }} training results.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Save/Discard -->
+                <div class="action-buttons mt-4">
+                    <button class="btn btn-primary" onclick="saveTraining()">
+                        <i class="fas fa-save me-2"></i>Save Result
+                    </button>
+                    <button class="btn btn-secondary" onclick="cancelTraining()">
+                        <i class="fas fa-times me-2"></i>Discard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training History Modal -->
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="historyModalLabel">
+                        <i class="fas fa-history me-2"></i>Training History
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% if training_history and show_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Training Date</th>
+                                    <th>Model Path</th>
+                                    <th>Samples</th>
+                                    <th>Avg Accuracy</th>
+                                    <th>Avg Precision</th>
+                                    <th>Avg Recall</th>
+                                    <th>Avg F1 Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in training_history %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <small>{{ session.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted font-monospace">
+                                            {{ session.model_path|default('N/A') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ session.sample_count }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ "%.4f"|format(session.avg_accuracy) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            {{ "%.4f"|format(session.avg_precision) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ "%.4f"|format(session.avg_recall) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">
+                                            {{ "%.4f"|format(session.avg_f1) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No training history found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    try {
-        const response = await fetch('/train/cancel', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+            
+            // Change icon
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-indent');
+            } else {
+                icon.classList.remove('fa-indent');
+                icon.classList.add('fa-bars');
             }
         });
         
-        if (response.ok) {
-            const html = await response.text();
-            document.documentElement.innerHTML = html;
+        // Set active menu item
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Load available models khi trang được tải
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAvailableModels();
             
-            // Hiển thị thông báo thành công
-            setTimeout(() => {
-                alert('Training result discarded successfully!');
-            }, 500);
+            // Thêm event listener cho train type và train mode
+            document.getElementById('trainType').addEventListener('change', loadAvailableModels);
+            document.getElementById('trainMode').addEventListener('change', toggleResumeSection);
+            
+            // Khởi tạo trạng thái ban đầu
+            toggleResumeSection();
+        });
+        
+        // View training history
+        async function viewHistory() {
+            try {
+                const response = await fetch('/train/history');
+                const html = await response.text();
+                
+                // Cập nhật nội dung trang với history modal
+                document.documentElement.innerHTML = html;
+                
+                // Hiển thị modal
+                const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
+                historyModal.show();
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+                alert('Error loading training history: ' + error.message);
+            }
         }
-    } catch (error) {
-        console.error('Error discarding training:', error);
-        alert('Error discarding training: ' + error.message);
-    }
-}
+        
+        // Load danh sách model có sẵn
+        async function loadAvailableModels() {
+            const trainType = document.getElementById('trainType').value;
+            const resumeSelect = document.getElementById('resumeModelSelect');
+            const modelCountText = document.getElementById('modelCountText');
+            
+            try {
+                const response = await fetch('/train/available-models');
+                const data = await response.json();
+                
+                const models = data[trainType] || [];
+                
+                // Clear existing options
+                resumeSelect.innerHTML = '<option value="">-- Select Model --</option>';
+                
+                // Add model options
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.name;  // Gửi tên folder (ví dụ: 20251102_093809_Xception)
+                    option.textContent = model.name;
+                    option.title = model.path;  // Hiển thị full path khi hover
+                    resumeSelect.appendChild(option);
+                });
+                
+                // Update model count text
+                modelCountText.textContent = `Found ${models.length} ${trainType} models`;
+                modelCountText.className = models.length > 0 ? 'form-text text-success' : 'form-text text-warning';
+                
+            } catch (error) {
+                console.error('Error loading models:', error);
+                resumeSelect.innerHTML = '<option value="">-- Error loading models --</option>';
+                modelCountText.textContent = 'Error loading models';
+                modelCountText.className = 'form-text text-danger';
+            }
+        }
+        
+        // Toggle resume section
+        function toggleResumeSection() {
+            const trainMode = document.getElementById('trainMode');
+            const resumeSection = document.getElementById('resumeSection');
+            
+            if (trainMode.value === 'resume') {
+                resumeSection.classList.remove('d-none');
+                // Load models khi chuyển sang resume mode
+                loadAvailableModels();
+            } else {
+                resumeSection.classList.add('d-none');
+            }
+        }
+        
+        // Form submission
+        document.getElementById('trainingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+             // Validate resume model selection
+            const trainMode = document.getElementById('trainMode').value;
+            const resumeModel = document.getElementById('resumeModelSelect').value;
+            
+            if (trainMode === 'resume' && !resumeModel) {
+                alert('Please select a model to resume training from');
+                return;
+            }
+            startTraining();
+        });
 
-// Toggle resume section
-const trainMode = document.getElementById('trainMode');
-const resumeSection = document.getElementById('resumeSection');
+        async function startTraining() {
+            const progressDiv = document.getElementById('trainingProgress');
+            const startButton = document.getElementById('startButton');
+            
+            // Hiển thị progress và disable start button
+            progressDiv.classList.remove('d-none');
+            startButton.disabled = true;
+            startButton.textContent = 'Starting...';
+            
+            // Submit form
+            const formData = new FormData(document.getElementById('trainingForm'));
+            
+            try {
+                const response = await fetch('/train/start', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    document.documentElement.innerHTML = html;
+                } else {
+                    throw new Error('Failed to start training');
+                }
+            } catch (error) {
+                console.error('Error starting training:', error);
+                alert('Error starting training: ' + error.message);
+                startButton.disabled = false;
+                startButton.textContent = 'Start Training';
+                progressDiv.classList.add('d-none');
+            }
+        }
 
-trainMode.addEventListener('change', () => {
-    if (trainMode.value === 'resume') {
-        resumeSection.classList.remove('d-none');
-    } else {
-        resumeSection.classList.add('d-none');
-    }
-});
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        // Stop training
+        async function stopTraining() {
+            if (!confirm('Are you sure you want to stop training? Current progress will be saved.')) return;
+            
+            try {
+                const stopBtn = document.querySelector('button[onclick="stopTraining()"]');
+                const originalText = stopBtn.textContent;
+                stopBtn.textContent = 'Stopping...';
+                stopBtn.disabled = true;
+                
+                const response = await fetch('/train/stop', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('trainingStatus').textContent = 'Stopping...';
+                    document.getElementById('trainingStatus').className = 'badge bg-warning';
+                    
+                    // Kiểm tra trạng thái sau mỗi 2 giây
+                    const checkInterval = setInterval(async () => {
+                        const statusResponse = await fetch('/train/status');
+                        const status = await statusResponse.json();
+                        
+                        if (!status.is_running && !status.has_process) {
+                            clearInterval(checkInterval);
+                            document.getElementById('trainingStatus').textContent = 'Stopped';
+                            document.getElementById('trainingStatus').className = 'badge bg-danger';
+                            
+                            // Hiển thị thông báo và reload sau 3 giây
+                            setTimeout(() => {
+                                alert('Training stopped successfully!');
+                                location.reload();
+                            }, 1000);
+                        }
+                    }, 2000);
+                    
+                    // Timeout sau 10 giây
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        alert('Training stop command sent. Page will reload.');
+                        location.reload();
+                    }, 10000);
+                    
+                }
+            } catch (error) {
+                console.error('Error stopping training:', error);
+                alert('Error stopping training: ' + error.message);
+                
+                // Reset button state
+                const stopBtn = document.querySelector('button[onclick="stopTraining()"]');
+                stopBtn.textContent = 'Stop';
+                stopBtn.disabled = false;
+            }
+        }
+
+        async function saveTraining() {
+            try {
+                const response = await fetch('/train/save', { 
+                    method: 'POST'
+                    // KHÔNG thêm headers để server trả về HTML
+                });
+                
+                // Nhận HTML response và cập nhật trang
+                const html = await response.text();
+                document.documentElement.innerHTML = html;
+                
+                // Hiển thị thông báo từ message (nếu có)
+                // Message sẽ được hiển thị trong HTML template
+                
+            } catch (error) {
+                console.error('Error saving model:', error);
+                alert('Error saving model: ' + error.message);
+            }
+        }
+        
+        // Cancel training - Discard
+        async function cancelTraining() {
+            if (!confirm('Are you sure you want to discard this training result?')) return;
+            
+            try {
+                const response = await fetch('/train/cancel', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    document.documentElement.innerHTML = html;
+                    
+                    // Hiển thị thông báo thành công
+                    setTimeout(() => {
+                        alert('Training result discarded successfully!');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Error discarding training:', error);
+                alert('Error discarding training: ' + error.message);
+            }
+        }
+    </script>
 </body>
 </html>
