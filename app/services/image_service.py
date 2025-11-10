@@ -18,10 +18,7 @@ class ImageService:
     async def process_image(self, file):
         """Process uploaded image and return prediction results"""
         try:
-            if model_loader.image_model is None:
-                raise ValueError("Image model is not loaded. Please check model path.")
-            
-            # --- Lưu file tạm ---
+            # Lưu file tạm và gọi process_image_from_path
             file_extension = file.filename.split('.')[-1]
             filename = f"{uuid.uuid4()}.{file_extension}"
             file_path = settings.IMAGE_UPLOAD_DIR / filename
@@ -30,14 +27,35 @@ class ImageService:
                 content = await file.read()
                 buffer.write(content)
             
-            # # --- Xử lý ảnh ---
-            # image = Image.open(file_path)
-            # image_array = np.array(image)
+            # Gọi method xử lý từ path
+            result = await self.process_image_from_path(file_path)
             
-            # label, confidence, prediction = model_loader.predict_image(image_array)
+            # Xóa file tạm
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as cleanup_err:
+                logger.warning(f"⚠️ Failed to delete temp file: {cleanup_err}")
             
-            # --- Xử lý ảnh ---
-            image = Image.open(file_path)
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing image: {e}")
+            return {
+                "status": "error",
+                "message": f"Error processing image: {str(e)}",
+                "data": None,
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    async def process_image_from_path(self, image_path):
+        """Process image từ file path thay vì UploadFile"""
+        try:
+            if model_loader.image_model is None:
+                raise ValueError("Image model is not loaded. Please check model path.")
+            
+            # --- Xử lý ảnh từ path ---
+            image = Image.open(image_path)
 
             # ĐẢM BẢO ẢNH CÓ 3 KÊNH RGB
             if image.mode != 'RGB':
@@ -61,37 +79,31 @@ class ImageService:
             
             pred_index = 1 if label == "fake" else 0
             heatmap = make_gradcam_heatmap(img_for_heatmap, model_loader.image_model, pred_index=pred_index)
-            save_heatmap_image(file_path, heatmap, heatmap_path)
-            
-            # --- Dọn dẹp file tạm ---
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                    logger.info(f"🧹 Deleted temp image file: {file_path}")
-            except Exception as cleanup_err:
-                logger.warning(f"⚠️ Failed to delete temp file: {cleanup_err}")
+            save_heatmap_image(image_path, heatmap, heatmap_path)
             
             # --- Trả kết quả ---
-            result = {
+            result_data = {
+                "heatmap_path": f"/static/heatmaps/images/{heatmap_filename}",
+                "label": label,
+                "confidence_score": round(confidence, 4),
+                "raw_confidence": float(prediction[0][0]),  # Thêm raw confidence
+                "created_at": datetime.now().isoformat()
+            }
+            
+            logger.info(f"✅ Image processed from path: {label} ({confidence:.2f})")
+            
+            return {
                 "status": "success",
                 "message": "Image processed successfully",
-                "data": {
-                    "heatmap_path": f"/static/heatmaps/images/{heatmap_filename}",
-                    "label": label,
-                    "confidence_score": round(confidence, 4),
-                    "created_at": datetime.now().isoformat()
-                },
+                "data": result_data,
                 "timestamp": datetime.now().isoformat()
             }
             
-            logger.info(f"✅ Image processed: {filename} -> {label} ({confidence:.2f})")
-            return result
-            
         except Exception as e:
-            logger.error(f"❌ Error processing image: {e}")
+            logger.error(f"❌ Error processing image from path: {e}")
             return {
                 "status": "error",
-                "message": f"Error processing image: {str(e)}",
+                "message": f"Error processing image from path: {str(e)}",
                 "data": None,
                 "timestamp": datetime.now().isoformat()
             }

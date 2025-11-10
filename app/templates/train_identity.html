@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identity Training - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --dark-blue: #0a1f33;
+            --accent-blue: #2c5282;
+            --light-blue: #4a90e2;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 280px;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .training-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .training-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+        
+        .training-header h1 {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-action {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--light-blue), var(--accent-blue));
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #545b62);
+            color: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .training-progress {
+            margin-top: 2rem;
+        }
+        
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .results-section {
+            margin-top: 2rem;
+        }
+        
+        .results-table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .results-table th {
+            background: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        
+        .results-table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header text-center p-3 border-bottom">
+            <h4>Admin System</h4>
+            <p class="mb-0">Management Portal</p>
+        </div>
+        <div class="sidebar-menu p-3">
+            <a href="/" class="d-block text-white text-decoration-none p-2 mb-1">
+                <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+            <a href="/identity-verification" class="d-block text-white text-decoration-none p-2 mb-1">
+                <i class="fas fa-fingerprint me-2"></i>Identity Verification
+            </a>
+            <a href="/manage_samples" class="d-block text-white text-decoration-none p-2 mb-1">
+                <i class="fas fa-vial me-2"></i>Detect Fake/Real
+            </a>
+            <a href="/train-identity" class="d-block text-white text-decoration-none p-2 mb-1 active">
+                <i class="fas fa-brain me-2"></i>Identity Training
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-fingerprint me-2"></i>Identity Verification Training</h1>
+            <div class="user-info d-flex align-items-center">
+                <div class="user-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    {{ username[0]|upper if username else 'U' }}
+                </div>
+                <span>{{ username }}</span>
+            </div>
+        </div>
+
+        <div class="training-card">
+            <div class="training-header">
+                <h1>Identity Training Dashboard <i class="fas fa-brain"></i></h1>
+                <p>Train identity verification models with dataset2</p>
+            </div>
+            
+            <!-- Training Options -->
+            <form id="trainingForm" method="post" action="/train-identity/start">
+                <div class="form-section">
+                    <h4>Training Configuration</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Training Mode</label>
+                            <select class="form-select" name="train_mode" id="trainMode" required>
+                                <option value="from_scratch">Train from Scratch</option>
+                                <option value="continue">Continue Training</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Existing Model (for Continue Training)</label>
+                            <select class="form-select" name="resume_model" id="resumeModelSelect">
+                                <option value="">-- Select Model --</option>
+                                {% for model in available_models %}
+                                <option value="{{ model.name }}">{{ model.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text" id="modelCountText">{{ available_models|length }} models available</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success px-4" id="startButton">
+                        <i class="fas fa-play-circle me-2"></i>Start Training
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading Progress -->
+            <div id="trainingProgress" class="training-progress d-none">
+                <div class="alert alert-info">
+                    <h5 class="mb-3">Training in progress... <span class="badge bg-warning">Running</span></h5>
+                    <div class="progress my-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                    </div>
+                    <p class="mb-0">Please wait while training completes. This may take several minutes.</p>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h4 class="mb-3 text-secondary">Training Results</h4>
+                <table class="table table-bordered results-table">
+                    <thead>
+                        <tr>
+                            <th>Accuracy</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1 Score</th>
+                            <th>Total Samples</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {% if result and result.accuracy is defined %}
+                                    {{ "%.4f"|format(result.accuracy) }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if result and result.precision is defined %}
+                                    {{ "%.4f"|format(result.precision) }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if result and result.recall is defined %}
+                                    {{ "%.4f"|format(result.recall) }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if result and result.f1 is defined %}
+                                    {{ "%.4f"|format(result.f1) }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if result and result.total_samples is defined %}
+                                    {{ result.total_samples }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+
+                <!-- Message Alert -->
+                <div id="messageAlert" class="mt-3">
+                    {% if message %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <strong>Status:</strong> {{ message }}
+                        {% if result and result.saved_count is defined %}
+                        <br><small>Saved: {{ result.saved_count }}/{{ result.total_samples }} samples</small>
+                        {% endif %}
+                        {% if result and result.not_found_count is defined %}
+                        <br><small>Not found: {{ result.not_found_count }} samples</small>
+                        {% endif %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Save/Discard Buttons -->
+            {% if result and result.model_path %}
+            <div class="action-buttons mt-4">
+                <button type="button" class="btn btn-primary" onclick="saveTraining()">
+                    <i class="fas fa-save me-2"></i>Save Result
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="discardTraining()">
+                    <i class="fas fa-times me-2"></i>Discard
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle resume model selection based on training mode
+        document.getElementById('trainMode').addEventListener('change', function() {
+            const resumeSection = document.getElementById('resumeModelSelect').closest('.col-md-6');
+            if (this.value === 'continue') {
+                resumeSection.style.display = 'block';
+            } else {
+                resumeSection.style.display = 'none';
+            }
+        });
+
+        // Form submission
+        document.getElementById('trainingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate resume model selection for continue training
+            const trainMode = document.getElementById('trainMode').value;
+            const resumeModel = document.getElementById('resumeModelSelect').value;
+            
+            if (trainMode === 'continue' && !resumeModel) {
+                alert('Please select a model to continue training from');
+                return;
+            }
+            
+            startTraining();
+        });
+
+        async function startTraining() {
+            const progressDiv = document.getElementById('trainingProgress');
+            const startButton = document.getElementById('startButton');
+            
+            // Show progress and disable start button
+            progressDiv.classList.remove('d-none');
+            startButton.disabled = true;
+            startButton.textContent = 'Training...';
+            
+            // Submit form
+            const formData = new FormData(document.getElementById('trainingForm'));
+            
+            try {
+                const response = await fetch('/train-identity/start', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    document.documentElement.innerHTML = html;
+                } else {
+                    throw new Error('Failed to start training');
+                }
+            } catch (error) {
+                console.error('Error starting training:', error);
+                alert('Error starting training: ' + error.message);
+                startButton.disabled = false;
+                startButton.textContent = 'Start Training';
+                progressDiv.classList.add('d-none');
+            }
+        }
+
+        async function saveTraining() {
+            try {
+                const response = await fetch('/train-identity/save', {
+                    method: 'POST'
+                });
+                
+                const html = await response.text();
+                document.documentElement.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error saving model:', error);
+                alert('Error saving model: ' + error.message);
+            }
+        }
+
+        async function discardTraining() {
+            if (!confirm('Are you sure you want to discard this training result?')) return;
+            
+            try {
+                const response = await fetch('/train-identity/discard', {
+                    method: 'POST'
+                });
+                
+                const html = await response.text();
+                document.documentElement.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error discarding training:', error);
+                alert('Error discarding training: ' + error.message);
+            }
+        }
+
+        // Initialize form state
+        document.addEventListener('DOMContentLoaded', function() {
+            const trainMode = document.getElementById('trainMode');
+            const resumeSection = document.getElementById('resumeModelSelect').closest('.col-md-6');
+            
+            if (trainMode.value === 'from_scratch') {
+                resumeSection.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

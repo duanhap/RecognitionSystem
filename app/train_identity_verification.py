@@ -145,11 +145,11 @@ def process_dataset(dataset_root, system):
                             labels.append(person_name)
                             file_paths.append(img_path)
                             file_types.append("photo")
-                            print(f"✅ Processed photo: {img_path}")
+                            print(f"Processed photo: {img_path}")
                         else:
-                            print(f"❌ Failed to load image: {img_path}")
+                            print(f"Failed to load image: {img_path}")
                     except Exception as e:
-                        print(f"❌ Error processing {img_path}: {e}")
+                        print(f"Error processing {img_path}: {e}")
     
     # Process videos
     video_dir = os.path.join(dataset_root, "video")
@@ -170,14 +170,14 @@ def process_dataset(dataset_root, system):
                             labels.append(person_name)
                             file_paths.append(video_path)
                             file_types.append("video")
-                            print(f"✅ Processed video: {video_path}")
+                            print(f"Processed video: {video_path}")
                         else:
-                            print(f"❌ Failed to process video: {video_path}")
+                            print(f"Failed to process video: {video_path}")
                     except Exception as e:
-                        print(f"❌ Error processing {video_path}: {e}")
+                        print(f"Error processing {video_path}: {e}")
     
     # THÊM IN RA THỐNG KÊ
-    print(f"\n📊 FINAL STATS:")
+    print(f"\nFINAL STATS:")
     print(f"Total samples: {len(embeddings)}")
     print(f"Photos: {len([t for t in file_types if t == 'photo'])}")
     print(f"Videos: {len([t for t in file_types if t == 'video'])}")
@@ -219,19 +219,19 @@ def train_identity_verification(dataset_root=None, output_dir=None):
     model_folder = os.path.join(output_dir, f"{timestamp}_identity_verification")
     os.makedirs(model_folder, exist_ok=True)
     
-    print("🚀 Starting Identity Verification Training...")
+    print("Starting Identity Verification Training...")
     
     # Initialize system
     system = IdentityVerificationSystem()
     
     # Process dataset
-    print("📁 Processing dataset...")
+    print("Processing dataset...")
     X, y, file_paths, file_types = process_dataset(dataset_root, system)
     
     if len(X) == 0:
         raise ValueError("No data processed from dataset!")
     
-    print(f"✅ Processed {len(X)} samples ({len(np.unique(y))} persons)")
+    print(f"Processed {len(X)} samples ({len(np.unique(y))} persons)")
     
     # Encode labels
     le = LabelEncoder()
@@ -247,7 +247,7 @@ def train_identity_verification(dataset_root=None, output_dir=None):
     )
     
     # Build and train model
-    print("🧠 Training classifier...")
+    print(" Training classifier...")
     model = build_classification_model(X.shape[1], num_classes)
     
     callbacks = [
@@ -269,7 +269,7 @@ def train_identity_verification(dataset_root=None, output_dir=None):
     model.save(os.path.join(model_folder, "model_final.h5"))
     
     # Evaluation
-    print("📊 Evaluating model...")
+    print("Evaluating model...")
     y_pred = model.predict(X_test)
     y_pred_classes = np.argmax(y_pred, axis=1)
     
@@ -340,8 +340,8 @@ def train_identity_verification(dataset_root=None, output_dir=None):
     plt.savefig(os.path.join(model_folder, "training_curves.png"))
     plt.close()
     
-    print(f"✅ Training completed! Results saved to: {model_folder}")
-    print(f"📊 Final Metrics - Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
+    print(f"Training completed! Results saved to: {model_folder}")
+    print(f"Final Metrics - Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
     
     return model_folder
 

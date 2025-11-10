@@ -12,15 +12,17 @@ class TrainingRepository:
         query = self.db.query(TrainingSample).filter(TrainingSample.type == train_type)
         return query.limit(num_samples).all()
 
-    def save_training_result(self, accuracy: float, precision: float, recall: float, f1: float, sample_id: int, user_id: int = None, model_path: str = None):
+    # Trong training_repository.py, cập nhật hàm save_training_result:
+    def save_training_result(self, accuracy: float, precision: float, recall: float, f1: float, sample_id: int, user_id: int = None, model_path: str = None, embedding: str = None):
         result = TrainingResult(
             acc=accuracy,
             pre=precision,
             rec=recall,
             f1=f1,
-            file_path=model_path,  # THÊM DÒNG NÀY
+            file_path=model_path,
             created_at=datetime.utcnow(),
-            training_sample_id=sample_id
+            training_sample_id=sample_id,
+            embedding=embedding  # Thêm embedding
         )
         self.db.add(result)
         self.db.commit()

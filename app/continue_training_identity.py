@@ -101,10 +101,10 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
     model_folder = os.path.join(output_dir, f"{timestamp}_continue_{base_model_name}")
     os.makedirs(model_folder, exist_ok=True)
     
-    print("🔄 Continuing Identity Verification Training...")
+    print("Continuing Identity Verification Training...")
     
     # Load existing model and data
-    print(f"📂 Loading existing model: {model_path}")
+    print(f"Loading existing model: {model_path}")
     model = load_model(model_path)
     
     # Load existing samples data
@@ -114,7 +114,7 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
     if os.path.exists(existing_samples_path):
         df_existing = pd.read_excel(existing_samples_path)
         existing_files = set(df_existing['file_path'].values)
-        print(f"📊 Loaded {len(existing_files)} existing samples")
+        print(f"Loaded {len(existing_files)} existing samples")
         
         # Convert embeddings from existing data
         X_existing = np.array([np.fromstring(emb.strip('[]'), sep=',') for emb in df_existing['embedding']])
@@ -122,7 +122,7 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
         paths_existing = df_existing['file_path'].values
         types_existing = df_existing['file_type'].values
     else:
-        print("⚠️ No existing samples found, starting from scratch")
+        print("No existing samples found, starting from scratch")
         existing_files = set()
         X_existing = np.array([])
         y_existing = np.array([])
@@ -130,15 +130,15 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
         types_existing = np.array([])
     
     # Process ONLY NEW data
-    print("📁 Processing NEW dataset...")
+    print("Processing NEW dataset...")
     system = IdentityVerificationSystem()
     X_new, y_new, paths_new, types_new = process_new_dataset(new_data_root, system, existing_files)
     
     if len(X_new) == 0:
-        print("🎉 No NEW data found! Model is already up-to-date.")
+        print("No NEW data found! Model is already up-to-date.")
         return None
     
-    print(f"✅ Found {len(X_new)} NEW samples to train")
+    print(f"Found {len(X_new)} NEW samples to train")
     
     # Combine existing data + new data
     if len(X_existing) > 0:
@@ -152,7 +152,7 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
         paths_combined = paths_new
         types_combined = types_new
     
-    print(f"📦 Combined dataset: {len(X_combined)} total samples ({len(X_existing)} existing + {len(X_new)} new)")
+    print(f"Combined dataset: {len(X_combined)} total samples ({len(X_existing)} existing + {len(X_new)} new)")
     
     # Encode labels
     le = LabelEncoder()
@@ -161,7 +161,7 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
     
     # Rebuild model if number of classes changed
     if model.output.shape[-1] != num_classes:
-        print(f"🔄 Number of classes changed from {model.output.shape[-1]} to {num_classes}, rebuilding model...")
+        print(f"Number of classes changed from {model.output.shape[-1]} to {num_classes}, rebuilding model...")
         model = build_classification_model(X_combined.shape[1], num_classes)
     else:
         # Continue with existing model
@@ -180,7 +180,7 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
     )
     
     # Continue training
-    print("🧠 Continuing training...")
+    print("Continuing training...")
     callbacks = [
         EarlyStopping(monitor='val_loss', patience=IDENTITY_CONFIG["patience"], restore_best_weights=True),
         ModelCheckpoint(os.path.join(model_folder, "model_checkpoint.h5"), save_best_only=True),
@@ -200,7 +200,7 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
     model.save(os.path.join(model_folder, "model_final.h5"))
     
     # Evaluation
-    print("📊 Evaluating model...")
+    print("Evaluating model...")
     y_pred = model.predict(X_test)
     y_pred_classes = np.argmax(y_pred, axis=1)
     
@@ -275,9 +275,9 @@ def continue_identity_training(model_path, new_data_root=None, output_dir=None):
     plt.savefig(os.path.join(model_folder, "training_curves.png"))
     plt.close()
     
-    print(f"✅ Continue training completed! Results saved to: {model_folder}")
-    print(f"📊 Final Metrics - Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
-    print(f"📁 Dataset: {len(X_existing)} existing + {len(X_new)} new = {len(X_combined)} total samples")
+    print(f"Continue training completed! Results saved to: {model_folder}")
+    print(f"Final Metrics - Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
+    print(f"Dataset: {len(X_existing)} existing + {len(X_new)} new = {len(X_combined)} total samples")
     
     return model_folder
 

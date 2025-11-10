@@ -6,8 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 class Settings:
     # Model paths
     MODEL_SYSTEM_DIR = BASE_DIR / "app/modelsystem"
-    IMAGE_MODEL_PATH = MODEL_SYSTEM_DIR / "image" / "20251025_152553_Xception" / "model_final.h5"
-    VIDEO_MODEL_PATH = MODEL_SYSTEM_DIR / "video" / "20251025_171325_Xception_video" / "model_final.h5"
+    IMAGE_MODEL_PATH = MODEL_SYSTEM_DIR / "image" / "20251031_120748_continue_from_20251031_114053_Xception" / "model_final.h5"
+    VIDEO_MODEL_PATH = MODEL_SYSTEM_DIR / "video" / "20251031_223619_continue_superdeep_20251031_215958_Xception_video" / "model_final.h5"
+    IDENTITY_MODEL_PATH = MODEL_SYSTEM_DIR / "identity" / "20251109_145749_identity_verification" / "model_final.h5"
     
     # Upload directories
     UPLOAD_DIR = BASE_DIR / "app/uploads"

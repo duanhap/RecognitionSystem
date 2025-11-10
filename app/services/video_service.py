@@ -15,27 +15,43 @@ logger = logging.getLogger(__name__)
 class VideoService:
     def __init__(self):
         self.frame_interval = 10
-        self.max_frames = 30  # Giới hạn số frame để xử lý nhanh
-        self.pooling_strategy = getattr(settings, 'VIDEO_POOLING_STRATEGY', 'mean')  # 👈 
+        self.max_frames = 30
+        self.pooling_strategy = getattr(settings, 'VIDEO_POOLING_STRATEGY', 'mean')
     
     async def process_video(self, file):
         """Process uploaded video with multiple frames and video-level pooling"""
         try:
-            if model_loader.video_model is None:
-                raise ValueError("Video model is not loaded. Please check model path.")
-            
-            # Generate unique filename
+            # Lưu file tạm và gọi process_video_from_path
             file_extension = file.filename.split('.')[-1]
             filename = f"{uuid.uuid4()}.{file_extension}"
             file_path = settings.VIDEO_UPLOAD_DIR / filename
             
-            # Save uploaded file
             with open(file_path, "wb") as buffer:
                 content = await file.read()
                 buffer.write(content)
             
+            # Gọi method xử lý từ path
+            result = await self.process_video_from_path(file_path)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing video: {e}")
+            return {
+                "status": "error",
+                "message": f"Error processing video: {str(e)}",
+                "data": None,
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    async def process_video_from_path(self, video_path):
+        """Process video từ file path thay vì UploadFile"""
+        try:
+            if model_loader.video_model is None:
+                raise ValueError("Video model is not loaded. Please check model path.")
+            
             # Extract multiple frames for video-level analysis
-            frames_data = self.extract_frames(file_path)
+            frames_data = self.extract_frames(video_path)
             if not frames_data:
                 raise ValueError("Could not extract frames from video")
             
@@ -51,45 +67,46 @@ class VideoService:
             
             # Cleanup temp files
             self.cleanup_temp_frames(frames_data)
-            file_path.unlink(missing_ok=True)  # Xóa video gốc sau khi xử lý
             
             # Prepare response với video-level results
-            result = {
+            result_data = {
+                "heatmap_path": f"/static/heatmaps/videos/{heatmap_filename}",
+                "label": video_result["final_label"],
+                "confidence_score": round(video_result["final_confidence"], 4),
+                "raw_confidence": video_result["pooling_results"][video_result["pooling_strategy"]],  # Thêm raw confidence
+                "pooling_strategy": video_result["pooling_strategy"],
+                "frames_analyzed": video_result["frames_analyzed"],
+                "frame_predictions": video_result["frame_predictions"],
+                "pooling_results": video_result["pooling_results"],
+                "created_at": datetime.now().isoformat()
+            }
+            
+            logger.info(f"✅ Video processed from path: {video_result['final_label']} "
+                       f"({video_result['final_confidence']:.2f}) using {video_result['frames_analyzed']} frames")
+            
+            return {
                 "status": "success",
                 "message": "Video processed successfully with video-level analysis",
-                "data": {
-                    "heatmap_path": f"/static/heatmaps/videos/{heatmap_filename}",
-                    "label": video_result["final_label"],
-                    "confidence_score": round(video_result["final_confidence"], 4),
-                    "pooling_strategy": video_result["pooling_strategy"],
-                    "frames_analyzed": video_result["frames_analyzed"],
-                    "frame_predictions": video_result["frame_predictions"],
-                    "pooling_results": video_result["pooling_results"],  # 👈 THÊM DÒNG NÀY
-                    "created_at": datetime.now().isoformat()
-                },
+                "data": result_data,
                 "timestamp": datetime.now().isoformat()
             }
             
-            logger.info(f"✅ Video processed: {filename} -> {video_result['final_label']} "
-                       f"({video_result['final_confidence']:.2f}) using {video_result['frames_analyzed']} frames")
-            return result
-            
         except Exception as e:
-            logger.error(f"❌ Error processing video: {e}")
+            logger.error(f"❌ Error processing video from path: {e}")
             # Cleanup on error
             try:
-                file_path.unlink(missing_ok=True)
                 self.cleanup_temp_frames(frames_data if 'frames_data' in locals() else [])
             except:
                 pass
             
             return {
                 "status": "error",
-                "message": f"Error processing video: {str(e)}",
+                "message": f"Error processing video from path: {str(e)}",
                 "data": None,
                 "timestamp": datetime.now().isoformat()
             }
     
+    # GIỮ NGUYÊN CÁC METHOD KHÁC (extract_frames, predict_video_with_pooling, get_best_frame, generate_heatmap_for_frame, cleanup_temp_frames)
     def extract_frames(self, video_path):
         """Extract multiple frames from video với interval"""
         frames_data = []
